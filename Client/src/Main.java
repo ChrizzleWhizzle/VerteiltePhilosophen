@@ -1,11 +1,10 @@
-import javafx.scene.paint.PhongMaterial;
-
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws RemoteException {
         int nForks = 5;
         int nSeats = 5;
         int nPhilosophers = 5;
@@ -49,7 +48,7 @@ public class Main {
         System.out.println("started");
 
         try {
-            Thread.sleep(60000);
+            Thread.sleep(10000);
         } catch (InterruptedException e) {
         }
 

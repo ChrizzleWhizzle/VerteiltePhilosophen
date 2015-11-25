@@ -1,10 +1,13 @@
+import java.rmi.RemoteException;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class Seat extends Lockable {
+public class Seat {
 
     private Fork leftFork;
     private Fork rightFork;
     final int id;
+    final ReentrantLock lock = new ReentrantLock();
 
     public Seat(int id, Fork leftFork, Fork rightFork) {
         this.leftFork = leftFork;
@@ -12,7 +15,7 @@ public class Seat extends Lockable {
         this.id = id;
     }
 
-    public void takeRightFork() throws InterruptedException{
+    public void takeRightFork() throws InterruptedException, RemoteException {
         while(!rightFork.take()){
 //            try {
                 Thread.sleep(new Random().nextInt(5));
@@ -21,14 +24,14 @@ public class Seat extends Lockable {
 //            }
         }
     }
-    public boolean takeLeftFork() throws InterruptedException{
+    public boolean takeLeftFork() throws InterruptedException, RemoteException{
         return leftFork.take();
     }
-    public void dropRight(){
+    public void dropRight() throws RemoteException {
         rightFork.drop();
     }
 
-    public void dropLeft(){
+    public void dropLeft() throws RemoteException {
         leftFork.drop();
     }
 

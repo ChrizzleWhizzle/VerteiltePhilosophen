@@ -3,7 +3,7 @@ import java.util.List;
 
 public class Table {
     final List<Seat> seats;
-    final List<Fork> forks;
+    final List<I_Fork> forks;
     Master master;
     final int seatSize;
 

@@ -1,5 +1,3 @@
-import java.util.concurrent.locks.ReentrantLock;
-
 public class Philosopher extends Thread {
     // Process:
     // start with meditate
