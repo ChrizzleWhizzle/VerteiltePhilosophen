@@ -1,18 +1,58 @@
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class Table {
-    final List<Seat> seats;
-    final List<I_Fork> forks;
-    Master master;
-    final int seatSize;
 
-    public Table(List seats, List forks) {
-        this.seats = seats;
-        this.forks = forks;
-        seatSize = seats.size();
+    private List<Seat> seats;
+    private List<Fork> forks;
+    private Master master;
+    private int seatSize;
+    private static final int MIN_SEATS = 2;
+
+    public Table(int nSeatCount) throws IllegalArgumentException {
+        this.seats = new ArrayList<>();
+        this.forks = new ArrayList<>();
+        if (nSeatCount < MIN_SEATS) throw new IllegalArgumentException("Table must have at least " + MIN_SEATS + " Seats!");
+
+        addSeats(nSeatCount);
     }
+
     public void addMaster(Master m) { this.master = m; }
+
+    public Master getMaster() {
+        return master;
+    }
+
+    public void addSeats(int nSeatCount) {
+
+        int nForks = nSeatCount;
+        int nSeats = nSeatCount;
+
+        List<Seat> seatList = new ArrayList<>(nSeats);
+        List<Fork> forkList = new ArrayList<>(nForks);
+
+        //Create forks
+        for(int i = 0; i < nForks; i++){
+            try {
+                forkList.add(new Fork());
+            } catch (RemoteException e) {
+                // this exception will never be thrown
+            }
+        }
+
+        //Create seats
+        int seatID = 1;
+        seatList.add(new Seat(seatID++, forkList.get(nForks - 1),forkList.get(0)));
+        for(int i = 0; i < nSeats - 1; i++){
+            seatList.add(new Seat(seatID++, forkList.get(i),forkList.get(i+1)));
+        }
+
+        this.seats.addAll(seatList);
+        this.seatSize = this.seats.size();
+        this.forks.addAll(forkList);
+    }
 
     public Seat takeSeat() throws  InterruptedException{
         Seat freeSeat = seats.get(0);

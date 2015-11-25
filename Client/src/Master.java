@@ -3,15 +3,36 @@ import java.util.IntSummaryStatistics;
 import java.util.List;
 
 public class Master extends Thread{
+
+    private final Table table;
     List<Philosopher> philList;
     int minEaten = Integer.MAX_VALUE;
     int maxEaten;
     int difference;
 
-    public Master(List<Philosopher> philList, int difference) {
-        this.philList = philList;
+    public Master(Table t, int difference) {
+        this.table = t;
+        this.philList = new ArrayList<>();
         this.difference = difference;
     }
+
+
+    public void addPhilosophers(int nNormalPhils, int nHungryPhils) {
+        int totalPhils = nNormalPhils + nHungryPhils;
+
+        for(int i = 0; i < totalPhils; i++){
+            Philosopher p;
+            if(nHungryPhils > 0){
+                p = new Philosopher(i + 1, table,PhilosopherState.HUNGRY);
+                nHungryPhils--;
+            }
+            else {
+                p = new Philosopher(i + 1, table,PhilosopherState.NORMAL);
+            }
+            philList.add(p);
+        }
+    }
+
     @Override
     public void run() {
         try {
@@ -36,6 +57,12 @@ public class Master extends Thread{
         }
     }
 
+    public void startTheFeeding() {
+        System.out.println("Start the feeding");
+
+        philList.forEach(p -> p.start());
+    }
+
     public boolean isAllowedToEat(Philosopher phil) {
         int minEaten = Integer.MAX_VALUE;
         int maxEaten = 0;
@@ -53,5 +80,10 @@ public class Master extends Thread{
         //minEaten = maxEaten;
 
         return allowedToEat;
+    }
+
+    public void stopTheFeeding() {
+        System.out.println("Stop the Feeding");
+        philList.forEach(p -> p.interrupt());
     }
 }

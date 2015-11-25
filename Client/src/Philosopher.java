@@ -31,7 +31,7 @@ public class Philosopher extends Thread {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                if (table.master.isAllowedToEat(this)) {
+                if (table.getMaster().isAllowedToEat(this)) {
                     takeSeat();
                     // take forks
                     while (!hasBothForks) {
