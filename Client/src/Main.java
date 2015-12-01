@@ -6,15 +6,12 @@ public class Main {
 
     public static void main(String[] args) throws RemoteException {
 
-        int nSeatCount = 5;
-        int nPhilosophers = 3;
-        int nHungryPhils = 2;
-        List<Philosopher> philList = new ArrayList<>(nPhilosophers);
+        int nSeatCount = 2;
+        int nPhilosophers = 2;
+        int nHungryPhils = 1;
 
         //Create table
-        Table table = new Table(nSeatCount);
-        table.addSeats(5);
-
+        Table table = new Table("Tafelrunde", nSeatCount);
 
         Master master = new Master(table, 10);
         master.addPhilosophers(nPhilosophers, nHungryPhils);
@@ -28,13 +25,31 @@ public class Main {
                 System.out.print(".");
                 Thread.sleep(1000);
             }
+            System.out.print("\n");
         } catch (InterruptedException e) {
         }
 
 
         master.startTheFeeding();
         try {
-            Thread.sleep(10000);
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+        }
+
+
+        try {
+            System.out.println("Try to add ten seats for 5 seconds");
+            master.addSeats(10);
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+        }
+
+            System.out.println("Try to remove more seats than possible");
+            // try to remove more seats than possible
+            master.removeSeats(Integer.MAX_VALUE);
+
+        try {
+            Thread.sleep(300);
         } catch (InterruptedException e) {
         }
 
@@ -45,7 +60,7 @@ public class Main {
         long sumMealsEaten = 0;
         int minEaten = Integer.MAX_VALUE;
         int maxEaten = 0;
-        for (Philosopher p : philList) {
+        for (Philosopher p : master.philList) {
             try {
 
                 p.join();

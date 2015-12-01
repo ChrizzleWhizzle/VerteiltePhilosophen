@@ -62,18 +62,18 @@ public class Philosopher extends Thread {
             postMsg("eating for " + state.getEatTime() + "on Seat: " + seat.id);
             mealsEaten++;
             totalMealsEaten++;
-            Thread.sleep(state.getEatTime());
+            Thread.sleep(state.getEatTime()*10);
     }
 
     private void goToSleep() throws InterruptedException {
             postMsg("sleeping for " + state.getSleepTime());
-            Thread.sleep(state.getSleepTime());
+            Thread.sleep(state.getSleepTime()*10);
             mealsEaten = 0;
     }
 
     private void meditate() throws InterruptedException {
         postMsg("meditating for " + state.getMeditateTime());
-            Thread.sleep(state.getMeditateTime());
+            Thread.sleep(state.getMeditateTime()*10);
     }
 
     private void postMsg(String str) {

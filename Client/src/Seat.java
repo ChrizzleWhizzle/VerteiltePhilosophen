@@ -8,6 +8,7 @@ public class Seat {
     private Fork rightFork;
     final int id;
     final ReentrantLock lock = new ReentrantLock();
+    boolean freeForSeatChoice = true;
 
     public Seat(int id, Fork leftFork, Fork rightFork) {
         this.leftFork = leftFork;
@@ -35,10 +36,16 @@ public class Seat {
         leftFork.drop();
     }
 
+    public Fork getRightFork() { return rightFork; }
+
+    public void rebindRightFork(Fork f) {
+        this.rightFork = f;
+    }
+
 
     @Override
     public String toString() {
-        return super.toString().concat(leftFork.toString().concat(rightFork.toString()));
+        return "Seat#" + id + " ".concat(leftFork.toString().concat(rightFork.toString()));
     }
 
     public void standUp() {

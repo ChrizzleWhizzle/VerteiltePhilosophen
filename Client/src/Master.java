@@ -33,6 +33,14 @@ public class Master extends Thread{
         }
     }
 
+    public void addSeats(int nSeatsToBeAdded) {
+        table.addSeats(nSeatsToBeAdded);
+    }
+
+    public void removeSeats(int nSeatsToBeDeleted) {
+        table.removeSeats(nSeatsToBeDeleted);
+    }
+
     @Override
     public void run() {
         try {
