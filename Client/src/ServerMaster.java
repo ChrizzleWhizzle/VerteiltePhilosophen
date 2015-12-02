@@ -1,8 +1,13 @@
+import java.rmi.Naming;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ServerMaster extends Thread {
+public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
 
     private static int event = 0;
     private Map<String, Table> _tableMap;
@@ -10,12 +15,23 @@ public class ServerMaster extends Thread {
     //int maxEaten;
     int _difference;
 
-    public ServerMaster(int difference) {
+    public ServerMaster(int difference) throws RemoteException{
         _tableMap = new ConcurrentHashMap<>();
         _difference = difference;
+        try {
+            LocateRegistry.createRegistry(2020);
+            Naming.bind("//localhost:2020/ServerMaster",
+                    this);
+            System.out.println("ServerMaster: finished rmi binding");
+        } catch(Exception e) {
+            // Registrieren des Remote-Objects fehlgeschlagen
+            e.printStackTrace();
+        }
     }
 
-
+    public static void main(String... args) throws RemoteException{
+        ServerMaster sm = new ServerMaster(10);
+    }
     public void addPhilosophers(int nNormalPhils, int nHungryPhils) {
         int totalPhils = nNormalPhils + nHungryPhils;
 
@@ -66,12 +82,13 @@ public class ServerMaster extends Thread {
      * @param table Table to be added
      * @return false if the table is already in the map of the master
      */
-    public boolean addTable(Table table) {
+    public boolean addTable(Table table) throws RemoteException{
         if (_tableMap.containsKey(table.getName())) {
             return false;
         }
         _tableMap.put(table.getName(), table);
         //table.addMaster(this);
+        postMsg("Table added." + table.getName());
         return true;
     }
 
@@ -116,8 +133,10 @@ public class ServerMaster extends Thread {
     int minEaten = Integer.MAX_VALUE;
     int maxEaten = 0;
 
-    @Override
+   /* @Override
     public void run() {
+
+
         /*try {
             //sleep(100);
             while (!Thread.currentThread().isInterrupted()) {
@@ -153,9 +172,9 @@ public class ServerMaster extends Thread {
             }
         } catch (Exception e) {
             return;
-        }*/
+        }
     }
-
+*/
     public void startTheFeeding() {
         System.out.println("Start the feeding");
         //_tableMap.values().forEach(Table::startTheFeeding);
@@ -191,7 +210,7 @@ public class ServerMaster extends Thread {
     }
 
     private void postMsg(String str) {
-        System.out.printf("Time: %d Event: %d Tablemaster %s \n",
+        System.out.printf("Time: %d Event: %d ServerMaster %s \n",
                 System.currentTimeMillis(), ++event, str);
     }
 
