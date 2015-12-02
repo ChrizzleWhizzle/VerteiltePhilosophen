@@ -58,13 +58,13 @@ public class Table {
         // first check if there already exists some seats, take the last seat and the right fork from the seat
         if (!_seats.isEmpty()) {
             lastSeat = _seats.get(_seatSize - 1);
-            seatID = lastSeat.id;
+            seatID = lastSeat.id+1;
             lastRightFork = lastSeat.getRightFork();
         }
 
         // last right fork is null if none seats are added yet to the table
         if (lastRightFork == null) {
-            lastRightFork = forkList.get(nForks - 1);
+            lastRightFork = forkList.get(0);
         }
 
         // first add one seat and take right fork from the last seat of the existing seats as left fork
@@ -72,19 +72,33 @@ public class Table {
             seatList.add(new Seat(seatID++, forkList.get(i), forkList.get(i + 1)));
         }
 
+        // last seat is null if no seats are yet created on the table
         if (lastSeat == null) {
             lastSeat = seatList.get(seatList.size() - 1);
-        }
 
-        // we need to update the current last seat's right fork
-        lastSeat.lock.lock();
-        lastSeat.rebindRightFork(lastRightFork);
+            // we need to rebind the right fork of the last existing seat to our newly created first fork
+            lastSeat.rebindRightFork(lastRightFork);
+        } else {
+            // first we need to ensure that the seat will not be taken by a new philosopher
+            lastSeat.freeForSeatChoice = false;
+
+            // wait if some philosophers are waiting to eat on that seat
+            while (lastSeat.lock.getQueueLength() > 0 || lastSeat.lock.isLocked()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    // nothing happens in here
+                }
+            }
+            lastSeat.rebindRightFork(forkList.get(0));
+
+            // we need to set the right fork of our last created seat to the previous right fork of the already existing last seat
+            seatList.get(seatList.size() - 1).rebindRightFork(lastRightFork);
+        }
 
         _seats.addAll(seatList);
         _seatSize = _seats.size();
         _forks.addAll(forkList);
-
-        lastSeat.lock.unlock();
 
         postMsg(String.format("#Seats added: %d | #Total seats: %d", nSeatCount, _seatSize));
     }
@@ -124,17 +138,22 @@ public class Table {
             secondLastSeat.freeForSeatChoice = false;
 
             // wait till every waiting/eating Philosopher leaves the seat
-            while (lastSeat.lock.getQueueLength() > 0 || secondLastSeat.lock.getQueueLength() > 0) {
+            while (lastSeat.lock.getQueueLength() > 0 || secondLastSeat.lock.getQueueLength() > 0 ||
+                    lastSeat.lock.isLocked() || secondLastSeat.lock.isLocked()) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     // nothing happens in here
                 }
             }
+
             // rebind the right fork of the second last seat to the fork of the last seat
             secondLastSeat.rebindRightFork(lastSeat.getRightFork());
-            secondLastSeat.freeForSeatChoice = true;
 
+            // if seat will be deleted next iteration we don't need to set him free again for seat scheduling
+            if (i+1 == maxSeatsToDelete) {
+                secondLastSeat.freeForSeatChoice = true;
+            }
             // remove the last seat
             _seats.remove(lastSeat);
 
