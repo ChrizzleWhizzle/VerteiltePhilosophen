@@ -1,10 +1,11 @@
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
-public class Table {
+public class Table implements Serializable{
 
     private List<Seat> _seats;
     private List<Fork> _forks;

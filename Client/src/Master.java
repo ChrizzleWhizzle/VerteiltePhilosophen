@@ -1,10 +1,11 @@
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Master extends Thread {
+public class Master extends Thread implements Serializable{
 
     private static int event = 0;
     private Table _table;

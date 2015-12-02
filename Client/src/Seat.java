@@ -1,8 +1,9 @@
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Seat {
+public class Seat implements Serializable{
 
     private Fork leftFork;
     private Fork rightFork;
