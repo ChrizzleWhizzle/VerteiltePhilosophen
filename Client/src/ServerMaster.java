@@ -83,6 +83,8 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
      * @return false if the table is already in the map of the master
      */
     public boolean addTable(Table table) throws RemoteException{
+        postMsg("Tring to add table." + table.getName());
+
         if (_tableMap.containsKey(table.getName())) {
             return false;
         }
