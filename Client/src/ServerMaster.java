@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
 
     private static int event = 0;
-    private Map<String, Table> _tableMap;
+    private Map<String, I_Table> _tableMap;
     //int minEaten = Integer.MAX_VALUE;
     //int maxEaten;
     int _difference;
@@ -33,15 +33,15 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
         ServerMaster sm = new ServerMaster(10);
     }
     public void addPhilosophers(int nNormalPhils, int nHungryPhils)  throws RemoteException {
-        int totalPhils = nNormalPhils + nHungryPhils;
+        /*int totalPhils = nNormalPhils + nHungryPhils;
 
         // check if at least on phil will be added
         if (totalPhils < 1 || _tableMap.size() < 1) {
             return;
         }
 
-        Table addPhilsToThisTable = null;
-        for (Table t : _tableMap.values()) {
+        I_Table addPhilsToThisTable = null;
+        for (I_Table t : _tableMap.values()) {
             // get first table
             if (addPhilsToThisTable == null) addPhilsToThisTable = t;
             else {
@@ -60,7 +60,7 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
             //addPhilsToThisTable.addPhilosopher(p);
         }
         postMsg(String.format("Table: %s | #Philosophers added: %d", addPhilsToThisTable.getName(), totalPhils));
-
+*/
     }
 
     public void addSeats(Table t, int nSeatsToBeAdded) throws RemoteException {
@@ -68,7 +68,7 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
     }
 
     public void addSeats(String tableName, int nSeatsToBeAdded) throws RemoteException {
-        Table t = _tableMap.get(tableName);
+        I_Table t = _tableMap.get(tableName);
 
         // table not found
         if (t == null) {
@@ -82,19 +82,19 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
      * @param table Table to be added
      * @return false if the table is already in the map of the master
      */
-    public boolean addTable(Table table) throws RemoteException{
+    public boolean addTable(I_Table table) throws RemoteException{
         postMsg("Tring to add table." + table.getName());
 
         if (_tableMap.containsKey(table.getName())) {
             return false;
         }
-        _tableMap.put(table.getName(), table);
+        _tableMap.put(table.getName(), (I_Table)table);
         //table.addMaster(this);
         postMsg("Table added." + table.getName());
         return true;
     }
 
-    public Map<String, Table> getTables() throws RemoteException {
+    public Map<String, I_Table> getTables() throws RemoteException {
         return _tableMap;
     }
 
@@ -123,7 +123,7 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
 
     public boolean removeSeats(String tableName, int nSeatsToBeDeleted)  throws RemoteException{
 
-        Table t = _tableMap.get(tableName);
+        I_Table t = _tableMap.get(tableName);
         if (t == null) {
             return false;
         }
@@ -196,7 +196,7 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
      * @return
      */
     public Seat takeSeat(Table table, Seat compareToThisSeat) throws InterruptedException, RemoteException {
-        for (Table t : _tableMap.values()) {
+        for (I_Table t : _tableMap.values()) {
             // skip own table
             if (t.getName().equals(table.getName())) continue;
 

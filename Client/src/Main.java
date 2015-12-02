@@ -19,7 +19,7 @@ public class Main {
         table = new Table("Tafelrunde", nSeatCount);
 
         _master = new Master(table, 10);
-        _master.connectToServermasterAndAddOwnTable("10.179.2.222");
+        _master.connectToServermasterAndAddOwnTable("localhost");
         _master.addPhilosophers(nPhilosophers, nHungryPhils);
 
         //master.start();

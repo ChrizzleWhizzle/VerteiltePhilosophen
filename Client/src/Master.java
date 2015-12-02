@@ -29,7 +29,9 @@ public class Master extends UnicastRemoteObject
         try {
             _sm = (I_ServerMaster) Naming.lookup("//" + serverMasterIP + ":2020/ServerMaster");
 
-            _sm.addTable(_table);
+            if (_sm.addTable(_table)) {
+                postMsg("Added Table successfully");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
