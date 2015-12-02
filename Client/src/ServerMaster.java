@@ -32,7 +32,7 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
     public static void main(String... args) throws RemoteException{
         ServerMaster sm = new ServerMaster(10);
     }
-    public void addPhilosophers(int nNormalPhils, int nHungryPhils) {
+    public void addPhilosophers(int nNormalPhils, int nHungryPhils)  throws RemoteException {
         int totalPhils = nNormalPhils + nHungryPhils;
 
         // check if at least on phil will be added
@@ -63,11 +63,11 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
 
     }
 
-    public void addSeats(Table t, int nSeatsToBeAdded) {
+    public void addSeats(Table t, int nSeatsToBeAdded) throws RemoteException {
         addSeats(t.getName(), nSeatsToBeAdded);
     }
 
-    public void addSeats(String tableName, int nSeatsToBeAdded) {
+    public void addSeats(String tableName, int nSeatsToBeAdded) throws RemoteException {
         Table t = _tableMap.get(tableName);
 
         // table not found
@@ -92,11 +92,11 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
         return true;
     }
 
-    public Map<String, Table> getTables() {
+    public Map<String, Table> getTables() throws RemoteException {
         return _tableMap;
     }
 
-    public boolean isAllowedToEat(Philosopher phil) {
+    public boolean isAllowedToEat(Philosopher phil)  throws RemoteException{
         int minEaten = Integer.MAX_VALUE;
         int maxEaten = 0;
 
@@ -115,11 +115,11 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
         return allowedToEat;
     }
 
-    public boolean removeSeats(Table t, int nSeatsToBeDeleted) {
+    public boolean removeSeats(Table t, int nSeatsToBeDeleted) throws RemoteException {
         return removeSeats(t.getName(), nSeatsToBeDeleted);
     }
 
-    public boolean removeSeats(String tableName, int nSeatsToBeDeleted) {
+    public boolean removeSeats(String tableName, int nSeatsToBeDeleted)  throws RemoteException{
 
         Table t = _tableMap.get(tableName);
         if (t == null) {
@@ -193,7 +193,7 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
      * @param compareToThisSeat Compare seats from other tables to this
      * @return
      */
-    public Seat takeSeat(Table table, Seat compareToThisSeat) throws InterruptedException {
+    public Seat takeSeat(Table table, Seat compareToThisSeat) throws InterruptedException, RemoteException {
         for (Table t : _tableMap.values()) {
             // skip own table
             if (t.getName().equals(table.getName())) continue;

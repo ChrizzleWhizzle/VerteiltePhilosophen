@@ -4,20 +4,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Fork extends UnicastRemoteObject
-                implements I_Fork {
+        implements I_Fork {
 
     final ReentrantLock lock = new ReentrantLock();
 
     public Fork()
-            throws RemoteException
-    {
+            throws RemoteException {
     }
 
     public boolean take() throws InterruptedException, RemoteException {
         return lock.tryLock(1, TimeUnit.MILLISECONDS);
     }
 
-    public void drop() throws RemoteException{
+    public void drop() throws RemoteException {
         try {
             lock.unlock();
         } catch (Exception e) {

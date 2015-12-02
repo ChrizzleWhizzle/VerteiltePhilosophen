@@ -1,8 +1,10 @@
+import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Seat {
+public class Seat extends UnicastRemoteObject implements I_Seat {
 
     private Fork leftFork;
     private Fork rightFork;
@@ -10,7 +12,7 @@ public class Seat {
     final ReentrantLock lock = new ReentrantLock();
     boolean freeForSeatChoice = true;
 
-    public Seat(int id, Fork leftFork, Fork rightFork) {
+    public Seat(int id, Fork leftFork, Fork rightFork) throws RemoteException {
         this.leftFork = leftFork;
         this.rightFork = rightFork;
         this.id = id;
@@ -36,9 +38,9 @@ public class Seat {
         leftFork.drop();
     }
 
-    public Fork getRightFork() { return rightFork; }
+    public Fork getRightFork()  throws RemoteException { return rightFork; }
 
-    public void rebindRightFork(Fork f) {
+    public void rebindRightFork(Fork f)  throws RemoteException {
         this.rightFork = f;
     }
 
@@ -48,7 +50,7 @@ public class Seat {
         return "Seat#" + id + " ".concat(leftFork.toString().concat(rightFork.toString()));
     }
 
-    public void standUp() {
+    public void standUp()  throws RemoteException {
         lock.unlock();
     }
 }

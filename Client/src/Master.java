@@ -1,10 +1,12 @@
-import java.util.Iterator;
+import java.io.Serializable;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Master extends Thread {
+public class Master extends UnicastRemoteObject
+        implements I_Master {
 
     private static int event = 0;
     private Table _table;
@@ -13,17 +15,28 @@ public class Master extends Thread {
     int _difference;
     private List<Philosopher> _phils;
     private boolean _feeding = false;
+    private I_ServerMaster _sm;
 
-
-    public Master(Table t, int difference) {
+    public Master(Table t, int difference) throws RemoteException {
         _table = t;
         _table.addMaster(this);
         _phils = new CopyOnWriteArrayList<>();
         _difference = difference;
     }
 
+    @Override
+    public void connectToServermasterAndAddOwnTable(String serverMasterIP) throws RemoteException {
+        try {
+            _sm = (I_ServerMaster) Naming.lookup("//" + serverMasterIP + ":2020/ServerMaster");
 
-    public void addPhilosophers(int nNormalPhils, int nHungryPhils) {
+            _sm.addTable(_table);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void addPhilosophers(int nNormalPhils, int nHungryPhils)  throws RemoteException{
         int totalPhils = nNormalPhils + nHungryPhils;
 
         // check if at least on phil will be added
@@ -48,15 +61,18 @@ public class Master extends Thread {
 
     }
 
-    public void addSeats(int nSeatsToBeAdded) {
+    @Override
+    public void addSeats(int nSeatsToBeAdded) throws RemoteException  {
         _table.addSeats(nSeatsToBeAdded);
     }
 
-    public Table getTable() {
+    @Override
+    public Table getTable() throws RemoteException {
         return _table;
     }
 
-    public boolean isAllowedToEat(Philosopher phil) {
+    @Override
+    public boolean isAllowedToEat(Philosopher phil) throws RemoteException {
         int minEaten = Integer.MAX_VALUE;
 
         boolean allowedToEat = true;
@@ -72,7 +88,8 @@ public class Master extends Thread {
         return allowedToEat;
     }
 
-    public boolean removeSeats(int nSeatsToBeDeleted) {
+    @Override
+    public boolean removeSeats(int nSeatsToBeDeleted)  throws RemoteException{
         _table.removeSeats(nSeatsToBeDeleted);
         return true;
     }
@@ -119,13 +136,15 @@ public class Master extends Thread {
         }
 
     */
-    public void startTheFeeding() {
+    @Override
+    public void startTheFeeding() throws RemoteException {
         System.out.println("Start the feeding");
         _feeding = true;
         _phils.forEach(p -> p.start()); //Thread::start);
     }
 
-    public void stopTheFeeding() {
+    @Override
+    public void stopTheFeeding()  throws RemoteException{
         System.out.println("Stop the Feeding");
         _feeding = false;
         _phils.forEach(Thread::interrupt);
@@ -135,7 +154,8 @@ public class Master extends Thread {
      * @param compareToThisSeat Compare seats from other tables to this
      * @return
      */
-    public Seat takeSeat(Seat compareToThisSeat) throws InterruptedException {
+    @Override
+    public Seat takeSeat(Seat compareToThisSeat) throws InterruptedException, RemoteException {
 
         // TODO: ask the servermaster for better free seats
 
@@ -154,7 +174,8 @@ public class Master extends Thread {
                 System.currentTimeMillis(), ++event, str);
     }
 
-    public List<Philosopher> getPhilosophers() {
+    @Override
+    public List<Philosopher> getPhilosophers()  throws RemoteException {
         return _phils;
     }
 }

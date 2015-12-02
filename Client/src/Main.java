@@ -19,7 +19,7 @@ public class Main {
         table = new Table("Tafelrunde", nSeatCount);
 
         _master = new Master(table, 10);
-        _master.start();
+        _master.connectToServermasterAndAddOwnTable("10.179.2.222");
         _master.addPhilosophers(nPhilosophers, nHungryPhils);
 
         //master.start();
@@ -60,7 +60,6 @@ public class Main {
 
         _master.stopTheFeeding();
 
-        _master.interrupt();
         System.out.println("Joining all Philosopher-Threads");
         long sumMealsEaten = 0;
         int minEaten = Integer.MAX_VALUE;

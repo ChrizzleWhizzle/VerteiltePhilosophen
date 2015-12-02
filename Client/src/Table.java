@@ -1,10 +1,13 @@
+import java.io.Serializable;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
-public class Table {
+public class Table extends UnicastRemoteObject
+        implements I_Table {
 
     private List<Seat> _seats;
     private List<Fork> _forks;
@@ -16,7 +19,7 @@ public class Table {
     private static final int checkOtherTablesIfQueuelengthIsBiggerThan = 2;
 
 
-    public Table(String name, int nSeatCount) throws IllegalArgumentException {
+    public Table(String name, int nSeatCount) throws IllegalArgumentException, RemoteException  {
         _name = name;
         _seats = new CopyOnWriteArrayList<>();
         _forks = new CopyOnWriteArrayList<>();
@@ -26,13 +29,15 @@ public class Table {
         addSeats(nSeatCount);
     }
 
-    public void addMaster(Master m) {
+    public void addMaster(Master m) throws RemoteException {
         this.master = m;
     }
 
-    public boolean isAllowedToEat(Philosopher p) { return master.isAllowedToEat(p); }
+    public boolean isAllowedToEat(Philosopher p)  throws RemoteException{
+        return master.isAllowedToEat(p);
+    }
 
-    public void addSeats(int nSeatCount) {
+    public void addSeats(int nSeatCount) throws RemoteException {
 
         int nForks = nSeatCount + 1;
         int nSeats = nSeatCount;
@@ -70,7 +75,12 @@ public class Table {
 
         // first add one seat and take right fork from the last seat of the existing seats as left fork
         for (int i = 0; i < nSeats; i++) {
-            seatList.add(new Seat(seatID++, forkList.get(i), forkList.get(i + 1)));
+            // TODO: Handle Exception correctly
+            try {
+                seatList.add(new Seat(seatID++, forkList.get(i), forkList.get(i + 1)));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
 
         // last seat is null if no seats are yet created on the table
@@ -104,7 +114,7 @@ public class Table {
         postMsg(String.format("#Seats added: %d | #Total seats: %d", nSeatCount, _seatSize));
     }
 
-    public void connectWithOtherTable(Table t) {
+    public void connectWithOtherTable(Table t)  throws RemoteException{
 
     }
 
@@ -114,11 +124,11 @@ public class Table {
      *
      * @return returns the first fork of the Table
      */
-    public Fork getFirstFork() {
+    public Fork getFirstFork()  throws RemoteException{
         return _forks.get(0);
     }
 
-    public int getQueueLength() {
+    public int getQueueLength() throws RemoteException {
         int queue = 0;
 
         for (Seat s : _seats) {
@@ -128,7 +138,7 @@ public class Table {
         return queue;
     }
 
-    public void removeSeats(int nSeatCount) {
+    public void removeSeats(int nSeatCount)  throws RemoteException{
 
         // we have to delete the seats from end to front of the list as we need to keep the most left fork
 
@@ -178,7 +188,7 @@ public class Table {
     }
 
 
-    public Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException {
+    public Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException, RemoteException  {
         Seat freeSeat = _seats.get(0);
         boolean freeSeatHasPhilsWaiting = false;
         //try {
@@ -222,7 +232,7 @@ public class Table {
                 System.currentTimeMillis(), ++event, _name, str);
     }
 
-    public String getName() {
+    public String getName() throws RemoteException {
         return _name;
     }
 }

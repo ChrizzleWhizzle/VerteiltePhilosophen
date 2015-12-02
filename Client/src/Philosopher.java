@@ -1,3 +1,5 @@
+import java.rmi.RemoteException;
+
 public class Philosopher extends Thread {
     // Process:
     // start with meditate
@@ -85,7 +87,7 @@ public class Philosopher extends Thread {
         }
     }
 
-    private void takeSeat() throws InterruptedException{
+    private void takeSeat() throws InterruptedException, RemoteException{
         seat = table.takeSeat(false);
         seat.lock.lockInterruptibly();
     }
