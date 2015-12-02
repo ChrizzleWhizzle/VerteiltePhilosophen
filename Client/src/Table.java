@@ -1,6 +1,7 @@
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class Table {
@@ -12,11 +13,13 @@ public class Table {
     private static final int MIN_SEATS = 2;
     private final String _name;
     private static int event = 0;
+    private static final int checkOtherTablesIfQueuelengthIsBiggerThan = 2;
+
 
     public Table(String name, int nSeatCount) throws IllegalArgumentException {
         _name = name;
-        _seats = new ArrayList<>();
-        _forks = new ArrayList<>();
+        _seats = new CopyOnWriteArrayList<>();
+        _forks = new CopyOnWriteArrayList<>();
         if (nSeatCount < MIN_SEATS)
             throw new IllegalArgumentException("Table must have at least " + MIN_SEATS + " Seats!");
 
@@ -27,9 +30,7 @@ public class Table {
         this.master = m;
     }
 
-    public Master getMaster() {
-        return master;
-    }
+    public boolean isAllowedToEat(Philosopher p) { return master.isAllowedToEat(p); }
 
     public void addSeats(int nSeatCount) {
 
@@ -58,7 +59,7 @@ public class Table {
         // first check if there already exists some seats, take the last seat and the right fork from the seat
         if (!_seats.isEmpty()) {
             lastSeat = _seats.get(_seatSize - 1);
-            seatID = lastSeat.id+1;
+            seatID = lastSeat.id + 1;
             lastRightFork = lastSeat.getRightFork();
         }
 
@@ -117,6 +118,16 @@ public class Table {
         return _forks.get(0);
     }
 
+    public int getQueueLength() {
+        int queue = 0;
+
+        for (Seat s : _seats) {
+            queue += s.lock.getQueueLength();
+        }
+
+        return queue;
+    }
+
     public void removeSeats(int nSeatCount) {
 
         // we have to delete the seats from end to front of the list as we need to keep the most left fork
@@ -151,7 +162,7 @@ public class Table {
             secondLastSeat.rebindRightFork(lastSeat.getRightFork());
 
             // if seat will be deleted next iteration we don't need to set him free again for seat scheduling
-            if (i+1 == maxSeatsToDelete) {
+            if (i + 1 == maxSeatsToDelete) {
                 secondLastSeat.freeForSeatChoice = true;
             }
             // remove the last seat
@@ -166,30 +177,42 @@ public class Table {
         postMsg(String.format("#Seats to be deleted: %d | Actual deleted: %d | Seats left: %d", nSeatCount, deletedSeats, _seatSize));
     }
 
-    public Seat takeSeat() throws InterruptedException {
-        Seat freeSeat = _seats.get(0);
-        try {
-            for (int i = 0; i < _seats.size(); i++) { //todo reihenfolge zufällig modulo
-                Seat currentSeat = _seats.get(i);
 
-                // check if seat is still available for selection, may be not if seat or right neighbor will be deleted
-                if (currentSeat.freeForSeatChoice) {
-                    // If current seat is free, check left seat then right seat(add seatsize to avoid -1 return.
-                    if (!currentSeat.lock.isLocked()
-                            && !_seats.get((i + 1) % _seatSize).lock.isLocked()
-                            && !_seats.get((i - 1 + _seatSize) % _seatSize).lock.isLocked()) {
-                        freeSeat = currentSeat;
-                        break;
-                    }
-                    if (freeSeat.lock.getQueueLength() > currentSeat.lock.getQueueLength()) {
-                        freeSeat = currentSeat;
+    public Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException {
+        Seat freeSeat = _seats.get(0);
+        boolean freeSeatHasPhilsWaiting = false;
+        //try {
+        for (int i = 0; i < _seats.size(); i++) { //todo reihenfolge zufällig modulo
+            Seat currentSeat = _seats.get(i);
+
+            // check if seat is still available for selection, may be not if seat or right neighbor will be deleted
+            if (currentSeat.freeForSeatChoice) {
+                // If current seat is free, check left seat then right seat(add seatsize to avoid -1 return.
+                if (!currentSeat.lock.isLocked()
+                        && !_seats.get((i + 1) % _seatSize).lock.isLocked()
+                        && !_seats.get((i - 1 + _seatSize) % _seatSize).lock.isLocked()) {
+                    freeSeat = currentSeat;
+                    break;
+                }
+                if (freeSeat.lock.getQueueLength() > currentSeat.lock.getQueueLength()) {
+
+                    freeSeat = currentSeat;
+
+                    if (freeSeat.lock.getQueueLength() > checkOtherTablesIfQueuelengthIsBiggerThan) {
+                        freeSeatHasPhilsWaiting = true;
                     }
                 }
             }
-            freeSeat.lock.lockInterruptibly();
-        } finally {
-
         }
+
+        // check other tables for a seat to sit directly, skip if tablemaster called this method to prevent recursive stack overflow
+        if (freeSeatHasPhilsWaiting && !tableMasterIsAsking) {
+            freeSeat = master.takeSeat(freeSeat);
+        }
+        // try to lock the seat in the philosopher thread
+        //freeSeat.lock.lockInterruptibly();
+        //} finally { }
+
         return freeSeat;
     }
 
@@ -197,5 +220,9 @@ public class Table {
     private void postMsg(String str) {
         System.out.printf("Time: %d Event: %d Table %s %s \n",
                 System.currentTimeMillis(), ++event, _name, str);
+    }
+
+    public String getName() {
+        return _name;
     }
 }

@@ -1,0 +1,198 @@
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class ServerMaster extends Thread {
+
+    private static int event = 0;
+    private Map<String, Table> _tableMap;
+    //int minEaten = Integer.MAX_VALUE;
+    //int maxEaten;
+    int _difference;
+
+    public ServerMaster(int difference) {
+        _tableMap = new ConcurrentHashMap<>();
+        _difference = difference;
+    }
+
+
+    public void addPhilosophers(int nNormalPhils, int nHungryPhils) {
+        int totalPhils = nNormalPhils + nHungryPhils;
+
+        // check if at least on phil will be added
+        if (totalPhils < 1 || _tableMap.size() < 1) {
+            return;
+        }
+
+        Table addPhilsToThisTable = null;
+        for (Table t : _tableMap.values()) {
+            // get first table
+            if (addPhilsToThisTable == null) addPhilsToThisTable = t;
+            else {
+                addPhilsToThisTable = (addPhilsToThisTable.getQueueLength() > t.getQueueLength()) ? t : addPhilsToThisTable;
+            }
+        }
+
+        for (int i = 0; i < totalPhils; i++) {
+            Philosopher p;
+            if (nHungryPhils > 0) {
+                p = new Philosopher(i + 1, addPhilsToThisTable, PhilosopherState.HUNGRY);
+                nHungryPhils--;
+            } else {
+                p = new Philosopher(i + 1, addPhilsToThisTable, PhilosopherState.NORMAL);
+            }
+            //addPhilsToThisTable.addPhilosopher(p);
+        }
+        postMsg(String.format("Table: %s | #Philosophers added: %d", addPhilsToThisTable.getName(), totalPhils));
+
+    }
+
+    public void addSeats(Table t, int nSeatsToBeAdded) {
+        addSeats(t.getName(), nSeatsToBeAdded);
+    }
+
+    public void addSeats(String tableName, int nSeatsToBeAdded) {
+        Table t = _tableMap.get(tableName);
+
+        // table not found
+        if (t == null) {
+            return;
+        }
+
+        t.addSeats(nSeatsToBeAdded);
+    }
+
+    /**
+     * @param table Table to be added
+     * @return false if the table is already in the map of the master
+     */
+    public boolean addTable(Table table) {
+        if (_tableMap.containsKey(table.getName())) {
+            return false;
+        }
+        _tableMap.put(table.getName(), table);
+        //table.addMaster(this);
+        return true;
+    }
+
+    public Map<String, Table> getTables() {
+        return _tableMap;
+    }
+
+    public boolean isAllowedToEat(Philosopher phil) {
+        int minEaten = Integer.MAX_VALUE;
+        int maxEaten = 0;
+
+        boolean allowedToEat = true;
+        /*for(Philosopher p: philList){
+            if (p == phil) continue;
+            minEaten = Math.min(minEaten,p.totalMealsEaten);
+            if(phil.totalMealsEaten > (minEaten + difference)){
+                allowedToEat = false;
+                break;
+            }
+            //maxEaten = Math.max(maxEaten, p.totalMealsEaten);
+        }*/
+        //minEaten = maxEaten;
+
+        return allowedToEat;
+    }
+
+    public boolean removeSeats(Table t, int nSeatsToBeDeleted) {
+        return removeSeats(t.getName(), nSeatsToBeDeleted);
+    }
+
+    public boolean removeSeats(String tableName, int nSeatsToBeDeleted) {
+
+        Table t = _tableMap.get(tableName);
+        if (t == null) {
+            return false;
+        }
+
+        t.removeSeats(nSeatsToBeDeleted);
+        return true;
+    }
+
+    int minEaten = Integer.MAX_VALUE;
+    int maxEaten = 0;
+
+    @Override
+    public void run() {
+        /*try {
+            //sleep(100);
+            while (!Thread.currentThread().isInterrupted()) {
+                minEaten = Integer.MAX_VALUE;
+                maxEaten = 0;
+
+                for (Table t : _tableMap.values()) {
+
+                    Iterator<Philosopher> it1 = t.getPhilosophers().iterator();
+                    while(it1.hasNext()) {
+                        Philosopher p = it1.next();
+                        minEaten = Math.min(minEaten, p.totalMealsEaten);
+                        if (p.totalMealsEaten >= (minEaten + _difference)) {
+                            p.state.setBanned(true);
+                        } else {
+                            p.state.setBanned(false);
+                            //System.out.println("notify phil " + p.toString());
+                        }
+                        maxEaten = Math.max(maxEaten, p.totalMealsEaten);
+                    }
+                    for (Philosopher p : t.getPhilosophers()) {
+                        minEaten = Math.min(minEaten, p.totalMealsEaten);
+                        if (p.totalMealsEaten >= (minEaten + _difference)) {
+                            p.state.setBanned(true);
+                        } else {
+                            p.state.setBanned(false);
+                            //System.out.println("notify phil " + p.toString());
+                        }
+                        maxEaten = Math.max(maxEaten, p.totalMealsEaten);
+                    }
+                }
+                minEaten = maxEaten;
+            }
+        } catch (Exception e) {
+            return;
+        }*/
+    }
+
+    public void startTheFeeding() {
+        System.out.println("Start the feeding");
+        //_tableMap.values().forEach(Table::startTheFeeding);
+        //for (Table t : _tableMap.values()) {
+        //    t.startTheFeeding();
+        //}
+    }
+
+    public void stopTheFeeding() {
+        System.out.println("Stop the Feeding");
+        //_tableMap.values().forEach(Table::stopTheFeeding);
+    }
+
+    /**
+     * @param table             Table that asks if other Tables have a freeSeat
+     * @param compareToThisSeat Compare seats from other tables to this
+     * @return
+     */
+    public Seat takeSeat(Table table, Seat compareToThisSeat) throws InterruptedException {
+        for (Table t : _tableMap.values()) {
+            // skip own table
+            if (t.getName().equals(table.getName())) continue;
+
+            // get seat from next table
+            Seat s = t.takeSeat(true);
+
+            if (s.lock.getQueueLength() < compareToThisSeat.lock.getQueueLength()) {
+                // set compareseat to get minimum queue length
+                compareToThisSeat = s;
+            }
+        }
+        return compareToThisSeat;
+    }
+
+    private void postMsg(String str) {
+        System.out.printf("Time: %d Event: %d Tablemaster %s \n",
+                System.currentTimeMillis(), ++event, str);
+    }
+
+}

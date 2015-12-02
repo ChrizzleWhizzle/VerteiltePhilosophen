@@ -21,6 +21,7 @@ public class Philosopher extends Thread {
     private int mealsEaten;
     public int totalMealsEaten;
     private boolean hasBothForks = false;
+    private static final boolean DEBUG = false;
 
     public Philosopher(int id, Table table, PhilosopherState state) {
         this.id = id;
@@ -31,7 +32,7 @@ public class Philosopher extends Thread {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                if (table.getMaster().isAllowedToEat(this)) {
+                if (table.isAllowedToEat(this)) {
                     takeSeat();
                     // take forks
                     while (!hasBothForks) {
@@ -39,6 +40,7 @@ public class Philosopher extends Thread {
                         if (!seat.takeLeftFork()) {
                             seat.dropRight();
                         } else {
+
                             hasBothForks = true;
                         }
                     }
@@ -62,27 +64,30 @@ public class Philosopher extends Thread {
             postMsg("eating for " + state.getEatTime() + "on Seat: " + seat.id);
             mealsEaten++;
             totalMealsEaten++;
-            Thread.sleep(state.getEatTime()*10);
+            Thread.sleep(state.getEatTime());
     }
 
     private void goToSleep() throws InterruptedException {
             postMsg("sleeping for " + state.getSleepTime());
-            Thread.sleep(state.getSleepTime()*10);
+            Thread.sleep(state.getSleepTime());
             mealsEaten = 0;
     }
 
     private void meditate() throws InterruptedException {
         postMsg("meditating for " + state.getMeditateTime());
-            Thread.sleep(state.getMeditateTime()*10);
+            Thread.sleep(state.getMeditateTime());
     }
 
     private void postMsg(String str) {
-        System.out.printf("Time: %d Event: %d Philosopher %d %s " + state.name() + "\n",
-                System.currentTimeMillis(), ++event, id, str);
+        if (DEBUG) {
+            System.out.printf("Time: %d Event: %d Philosopher %d %s " + state.name() + "\n",
+                    System.currentTimeMillis(), ++event, id, str);
+        }
     }
 
     private void takeSeat() throws InterruptedException{
-        seat = table.takeSeat();
+        seat = table.takeSeat(false);
+        seat.lock.lockInterruptibly();
     }
 
     private void sleepBan() throws InterruptedException{
