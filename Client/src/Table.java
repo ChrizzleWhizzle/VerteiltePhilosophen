@@ -245,4 +245,9 @@ public class Table extends UnicastRemoteObject
     public String getName() throws RemoteException {
         return _name;
     }
+
+    @Override
+    public String toString() {
+        return _name;
+    }
 }

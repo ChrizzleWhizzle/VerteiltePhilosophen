@@ -32,6 +32,8 @@ public class Master extends UnicastRemoteObject
 
             if (_sm.addTable(_table)) {
                 postMsg("Added Table successfully");
+            }else {
+                postMsg("Table couldn't be added or was already in list of servermaster");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -48,13 +50,15 @@ public class Master extends UnicastRemoteObject
         }
 
         for (int i = 0; i < totalPhils; i++) {
-            Philosopher p;
+            PhilosopherState state;
             if (nHungryPhils > 0) {
-                p = new Philosopher(i + 1, _table, PhilosopherState.HUNGRY);
+                state = PhilosopherState.HUNGRY;
                 nHungryPhils--;
             } else {
-                p = new Philosopher(i + 1, _table, PhilosopherState.NORMAL);
+                state = PhilosopherState.NORMAL;
             }
+            Philosopher p = new Philosopher(i + 1, _table, state, _table.getMaxMealsEaten());
+
             _phils.add(p);
 
             if (_feeding) p.start();
@@ -141,12 +145,13 @@ public class Master extends UnicastRemoteObject
     @Override
     public void startTheFeeding() throws RemoteException {
         System.out.println("Start the feeding");
+        if (_feeding) return;
         _feeding = true;
         _phils.forEach(p -> p.start()); //Thread::start);
     }
 
     @Override
-    public void stopTheFeeding()  throws RemoteException{
+    public void stopTheFeeding() throws RemoteException{
         System.out.println("Stop the Feeding");
         _feeding = false;
         _phils.forEach(Thread::interrupt);

@@ -25,10 +25,11 @@ public class Philosopher extends Thread {
     private boolean hasBothForks = false;
     private static final boolean DEBUG = false;
 
-    public Philosopher(int id, Table table, PhilosopherState state) {
+    public Philosopher(int id, Table table, PhilosopherState state, int mealsEatenOffset) {
         this.id = id;
         this.table = table;
         this.state = state;
+        totalMealsEaten = mealsEatenOffset;
     }
 
     public void run() {
@@ -48,6 +49,7 @@ public class Philosopher extends Thread {
                     }
                     ; //boolean hasbothforks
                     eat();
+                    table.setMaxEatenIfMore(totalMealsEaten);
                     seat.dropLeft();
                     seat.dropRight();
                     seat.standUp();
@@ -82,8 +84,8 @@ public class Philosopher extends Thread {
 
     private void postMsg(String str) {
         if (DEBUG) {
-            System.out.printf("Time: %d Event: %d Philosopher %d %s " + state.name() + "\n",
-                    System.currentTimeMillis(), ++event, id, str);
+            System.out.printf("Time: %d Event: %d T: %s Philosopher %d %s " + state.name() + "\n",
+                    System.currentTimeMillis(), ++event, table, id, str);
         }
     }
 
@@ -95,5 +97,10 @@ public class Philosopher extends Thread {
     private void sleepBan() throws InterruptedException{
         postMsg("I have been banned!!!!!");
         sleep(5);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("T: %s Philosopher %d | Totalmeals: %d", table, id, totalMealsEaten);
     }
 }
