@@ -94,6 +94,15 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster{
         return true;
     }
 
+    @Override
+    public int getAllMinEaten(int m) throws RemoteException {
+        int result = m;
+        for(I_Table t: _tableMap.values()){
+            result = Math.min(result,t.getMaxMealsEaten());
+        }
+        return result;
+    }
+
     public Map<String, I_Table> getTables() throws RemoteException {
         return _tableMap;
     }

@@ -17,6 +17,7 @@ public class Master extends UnicastRemoteObject
     private boolean _feeding = false;
     private I_ServerMaster _sm;
 
+
     public Master(Table t, int difference) throws RemoteException {
         _table = t;
         _table.addMaster(this);
@@ -75,8 +76,7 @@ public class Master extends UnicastRemoteObject
 
     @Override
     public boolean isAllowedToEat(Philosopher phil) throws RemoteException {
-        int minEaten = Integer.MAX_VALUE;
-
+        int minEaten = _sm.getAllMinEaten(_table.getMaxMealsEaten());
         boolean allowedToEat = true;
         for (Philosopher p : _phils) {
             if (p == phil) continue;

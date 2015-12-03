@@ -17,6 +17,7 @@ public class Table extends UnicastRemoteObject
     private final String _name;
     private static int event = 0;
     private static final int checkOtherTablesIfQueuelengthIsBiggerThan = 2;
+    private int maxMealsEaten = 0;
 
 
     public Table(String name, int nSeatCount) throws IllegalArgumentException, RemoteException  {
@@ -225,6 +226,15 @@ public class Table extends UnicastRemoteObject
 
         return freeSeat;
     }
+    public void setMaxEatenIfMore(int m){
+        synchronized (this){
+            maxMealsEaten = Math.max(maxMealsEaten,m);
+        }
+    }
+    public int getMaxMealsEaten() throws RemoteException{
+        return maxMealsEaten;
+    }
+
 
 
     private void postMsg(String str) {

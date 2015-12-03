@@ -21,4 +21,6 @@ public interface I_Table extends Remote {
     Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException, RemoteException;
 
     String getName() throws RemoteException;
+
+    int getMaxMealsEaten()throws RemoteException;
 }
