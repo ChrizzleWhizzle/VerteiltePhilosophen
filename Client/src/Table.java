@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -32,6 +33,10 @@ public class Table extends UnicastRemoteObject
 
     public void addMaster(Master m) throws RemoteException {
         this.master = m;
+    }
+
+    public I_Master getMaster() throws RemoteException{
+        return master;
     }
 
     public boolean isAllowedToEat(Philosopher p)  throws RemoteException{
@@ -127,7 +132,7 @@ public class Table extends UnicastRemoteObject
         int queue = 0;
 
         for (Seat s : _seats) {
-            queue += s.lock.getQueueLength();
+            queue += s.getLock().getQueueLength();
         }
 
         return queue;
@@ -154,8 +159,8 @@ public class Table extends UnicastRemoteObject
             secondLastSeat.freeForSeatChoice = false;
 
             // wait till every waiting/eating Philosopher leaves the seat
-            while (lastSeat.lock.getQueueLength() > 0 || secondLastSeat.lock.getQueueLength() > 0 ||
-                    lastSeat.lock.isLocked() || secondLastSeat.lock.isLocked()) {
+            while (lastSeat.getLock().getQueueLength() > 0 || secondLastSeat.getLock().getQueueLength() > 0 ||
+                    lastSeat.getLock().isLocked() || secondLastSeat.getLock().isLocked()) {
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -183,8 +188,8 @@ public class Table extends UnicastRemoteObject
     }
 
 
-    public Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException, RemoteException  {
-        Seat freeSeat = _seats.get(0);
+    public I_Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException, RemoteException  {
+        I_Seat freeSeat = _seats.get(0);
         boolean freeSeatHasPhilsWaiting = false;
         //try {
         for (int i = 0; i < _seats.size(); i++) { //todo reihenfolge zufällig modulo
@@ -193,17 +198,15 @@ public class Table extends UnicastRemoteObject
             // check if seat is still available for selection, may be not if seat or right neighbor will be deleted
             if (currentSeat.freeForSeatChoice) {
                 // If current seat is free, check left seat then right seat(add seatsize to avoid -1 return.
-                if (!currentSeat.lock.isLocked()
-                        && !_seats.get((i + 1) % _seatSize).lock.isLocked()
-                        && !_seats.get((i - 1 + _seatSize) % _seatSize).lock.isLocked()) {
+                if (!currentSeat.getLock().isLocked()
+                        && !_seats.get((i + 1) % _seatSize).getLock().isLocked()
+                        && !_seats.get((i - 1 + _seatSize) % _seatSize).getLock().isLocked()) {
                     freeSeat = currentSeat;
                     break;
                 }
-                if (freeSeat.lock.getQueueLength() > currentSeat.lock.getQueueLength()) {
-
+                if (freeSeat.getLock().getQueueLength() > currentSeat.getLock().getQueueLength()) {
                     freeSeat = currentSeat;
-
-                    if (freeSeat.lock.getQueueLength() > checkOtherTablesIfQueuelengthIsBiggerThan) {
+                    if (freeSeat.getLock().getQueueLength() > checkOtherTablesIfQueuelengthIsBiggerThan) {
                         freeSeatHasPhilsWaiting = true;
                     }
                 }

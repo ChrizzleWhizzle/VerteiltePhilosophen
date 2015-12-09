@@ -101,47 +101,6 @@ public class Master extends UnicastRemoteObject
     }
 
 
-    /*    @Override
-        public void run() {
-            try {
-                //sleep(100);
-                while (!Thread.currentThread().isInterrupted()) {
-                    minEaten = Integer.MAX_VALUE;
-                    maxEaten = 0;
-
-                    for (Table t : _table.values()) {
-
-                        Iterator<Philosopher> it1 = t.getPhilosophers().iterator();
-                        while(it1.hasNext()) {
-                            Philosopher p = it1.next();
-                            minEaten = Math.min(minEaten, p.totalMealsEaten);
-                            if (p.totalMealsEaten >= (minEaten + _difference)) {
-                                p.state.setBanned(true);
-                            } else {
-                                p.state.setBanned(false);
-                                //System.out.println("notify phil " + p.toString());
-                            }
-                            maxEaten = Math.max(maxEaten, p.totalMealsEaten);
-                        }
-                        /*for (Philosopher p : t.getPhilosophers()) {
-                            minEaten = Math.min(minEaten, p.totalMealsEaten);
-                            if (p.totalMealsEaten >= (minEaten + _difference)) {
-                                p.state.setBanned(true);
-                            } else {
-                                p.state.setBanned(false);
-                                //System.out.println("notify phil " + p.toString());
-                            }
-                            maxEaten = Math.max(maxEaten, p.totalMealsEaten);
-                        }
-                    }
-                    minEaten = maxEaten;
-                }
-            } catch (Exception e) {
-                return;
-            }
-        }
-
-    */
     @Override
     public void startTheFeeding() throws RemoteException {
         System.out.println("Start the feeding");
@@ -154,7 +113,7 @@ public class Master extends UnicastRemoteObject
     public void stopTheFeeding() throws RemoteException{
         System.out.println("Stop the Feeding");
         _feeding = false;
-        _phils.forEach(Thread::interrupt);
+        _phils.forEach(p -> p.interrupt());
     }
 
     /**
@@ -162,18 +121,12 @@ public class Master extends UnicastRemoteObject
      * @return
      */
     @Override
-    public Seat takeSeat(Seat compareToThisSeat) throws InterruptedException, RemoteException {
+    public I_Seat takeSeat(I_Seat compareToThisSeat) throws InterruptedException, RemoteException {
+        // Let the servermaster compare local best Seat with other tables best seats
+        I_Seat seat = _sm.takeSeat((I_Table)_table,compareToThisSeat);
 
-        // TODO: ask the servermaster for better free seats
+        return seat;
 
-        // get seat from next table
-        Seat s = _table.takeSeat(true);
-
-        if (s.lock.getQueueLength() < compareToThisSeat.lock.getQueueLength()) {
-            // set compareseat to get minimum queue length
-            compareToThisSeat = s;
-        }
-        return compareToThisSeat;
     }
 
     private void postMsg(String str) {

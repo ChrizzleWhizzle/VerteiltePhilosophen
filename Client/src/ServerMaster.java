@@ -3,7 +3,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster {
@@ -32,27 +31,11 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
         ServerMaster sm = new ServerMaster(10);
     }
 
-   /*
-    public void addSeats(Table t, int nSeatsToBeAdded) throws RemoteException {
-        addSeats(t.getName(), nSeatsToBeAdded);
-    }
-
-    public void addSeats(String tableName, int nSeatsToBeAdded) throws RemoteException {
-        I_Table t = _tableList.get(tableName);
-
-        // table not found
-        if (t == null) {
-            return;
-        }
-
-        t.addSeats(nSeatsToBeAdded);
-    }
-*/
-
     /**
      * @param table Table to be added
      * @return false if the table is already in the map of the master
      */
+    @Override
     public boolean addTable(I_Table table) throws RemoteException {
         String tableName = table.getName();
         postMsg("Trying to add table." + tableName);
@@ -81,7 +64,6 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
 
         return true;
     }
-
     @Override
     public int getAllMinEaten(int m) throws RemoteException {
         int result = m;
@@ -89,6 +71,31 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
             result = Math.min(result, t.getMaxMealsEaten());
         }
         return result;
+    }
+
+    @Override
+    public I_Seat takeSeat(I_Table table, I_Seat compareToThisSeat) throws RemoteException {
+        I_Seat seatOfOtherTable = compareToThisSeat;
+        I_Seat tmp;
+        for(I_Table t: _tableList){
+            if(t.equals(table)){
+                continue;
+            }
+            try {
+                tmp = t.takeSeat(true);
+                if (tmp.getLock().getQueueLength() < seatOfOtherTable.getLock().getQueueLength()) {
+                    // set compareseat to get minimum queue length
+                    seatOfOtherTable = tmp;
+                }
+            }
+            catch (InterruptedException e) {
+                postMsg("Can't reach table " + t.getName());
+            }
+        }
+        if(!compareToThisSeat.equals(seatOfOtherTable)){
+            System.out.println("Using seat from different table.");
+        }
+        return seatOfOtherTable;
     }
 
     public List getTables() throws RemoteException {
@@ -113,67 +120,10 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
 
         return allowedToEat;
     }
-/*
-    public boolean removeSeats(Table t, int nSeatsToBeDeleted) throws RemoteException {
-        return removeSeats(t.getName(), nSeatsToBeDeleted);
-    }
 
-    public boolean removeSeats(String tableName, int nSeatsToBeDeleted) throws RemoteException {
-
-        I_Table t = _tableList.get(tableName);
-        if (t == null) {
-            return false;
-        }
-
-        t.removeSeats(nSeatsToBeDeleted);
-        return true;
-    }
-*/
     int minEaten = Integer.MAX_VALUE;
     int maxEaten = 0;
 
-    /* @Override
-     public void run() {
-
-
-         /*try {
-             //sleep(100);
-             while (!Thread.currentThread().isInterrupted()) {
-                 minEaten = Integer.MAX_VALUE;
-                 maxEaten = 0;
-
-                 for (Table t : _tableList.values()) {
-
-                     Iterator<Philosopher> it1 = t.getPhilosophers().iterator();
-                     while(it1.hasNext()) {
-                         Philosopher p = it1.next();
-                         minEaten = Math.min(minEaten, p.totalMealsEaten);
-                         if (p.totalMealsEaten >= (minEaten + _difference)) {
-                             p.state.setBanned(true);
-                         } else {
-                             p.state.setBanned(false);
-                             //System.out.println("notify phil " + p.toString());
-                         }
-                         maxEaten = Math.max(maxEaten, p.totalMealsEaten);
-                     }
-                     for (Philosopher p : t.getPhilosophers()) {
-                         minEaten = Math.min(minEaten, p.totalMealsEaten);
-                         if (p.totalMealsEaten >= (minEaten + _difference)) {
-                             p.state.setBanned(true);
-                         } else {
-                             p.state.setBanned(false);
-                             //System.out.println("notify phil " + p.toString());
-                         }
-                         maxEaten = Math.max(maxEaten, p.totalMealsEaten);
-                     }
-                 }
-                 minEaten = maxEaten;
-             }
-         } catch (Exception e) {
-             return;
-         }
-     }
- */
     public void startTheFeeding() {
         System.out.println("Start the feeding");
         //_tableList.values().forEach(Table::startTheFeeding);
@@ -187,26 +137,6 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
         //_tableList.values().forEach(Table::stopTheFeeding);
     }
 
-    /**
-     * @param table             Table that asks if other Tables have a freeSeat
-     * @param compareToThisSeat Compare seats from other tables to this
-     * @return
-     */
-    public Seat takeSeat(Table table, Seat compareToThisSeat) throws InterruptedException, RemoteException {
-        for (I_Table t : _tableList) {
-            // skip own table
-            if (t.getName().equals(table.getName())) continue;
-
-            // get seat from next table
-            Seat s = t.takeSeat(true);
-
-            if (s.lock.getQueueLength() < compareToThisSeat.lock.getQueueLength()) {
-                // set compareseat to get minimum queue length
-                compareToThisSeat = s;
-            }
-        }
-        return compareToThisSeat;
-    }
 
     private void postMsg(String str) {
         System.out.printf("Time: %d Event: %d ServerMaster %s \n",

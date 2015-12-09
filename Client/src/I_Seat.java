@@ -8,7 +8,9 @@ public interface I_Seat extends Remote {
     ReentrantLock lock = new ReentrantLock();
     boolean freeForSeatChoice = true;
 
-    void takeRightFork() throws InterruptedException, RemoteException;
+    int getId() throws RemoteException;
+
+    boolean takeRightFork() throws InterruptedException, RemoteException;
 
     boolean takeLeftFork() throws InterruptedException, RemoteException;
 
@@ -23,4 +25,5 @@ public interface I_Seat extends Remote {
 
     void standUp() throws RemoteException;
 
-}
+    ReentrantLock getLock() throws RemoteException;
+    }

@@ -15,11 +15,13 @@ public interface I_Table extends Remote {
     void removeSeats(int nSeatCount) throws RemoteException;
 
 
-    Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException, RemoteException;
+    I_Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException, RemoteException;
 
     String getName() throws RemoteException;
 
     int getMaxMealsEaten()throws RemoteException;
 
     void connectWithOtherTable(I_Table otherTable)  throws RemoteException;
+
+    I_Master getMaster() throws RemoteException;
 }
