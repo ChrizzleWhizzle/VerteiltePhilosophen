@@ -6,8 +6,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Seat extends UnicastRemoteObject implements I_Seat {
 
-    private Fork leftFork;
-    private Fork rightFork;
+    private I_Fork leftFork;
+    private I_Fork rightFork;
     final int id;
     final ReentrantLock lock = new ReentrantLock();
     boolean freeForSeatChoice = true;
@@ -38,10 +38,24 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
         leftFork.drop();
     }
 
-    public Fork getRightFork()  throws RemoteException { return rightFork; }
+    public I_Fork getRightFork()  throws RemoteException { return rightFork; }
 
-    public void rebindRightFork(Fork f)  throws RemoteException {
-        this.rightFork = f;
+    public void rebindRightFork(I_Fork f)  throws RemoteException {
+        // first we need to ensure that the seat will not be taken by a new philosopher
+        freeForSeatChoice = false;
+
+        // wait if some philosophers are waiting to eat on that seat
+        while (lock.getQueueLength() > 0 || lock.isLocked()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // nothing happens in here
+            }
+        }
+        rightFork = f;
+
+        // Allow seat to be taken by philo
+        freeForSeatChoice = true;
     }
 
 

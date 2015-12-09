@@ -57,7 +57,7 @@ public class Master extends UnicastRemoteObject
             } else {
                 state = PhilosopherState.NORMAL;
             }
-            Philosopher p = new Philosopher(i + 1, _table, state, _table.getMaxMealsEaten());
+            Philosopher p = new Philosopher(_phils.size()+1, _table, state, _table.getMaxMealsEaten());
 
             _phils.add(p);
 

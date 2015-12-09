@@ -71,6 +71,14 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
         }
         _tableList.add(table);
         postMsg("Table added." + tableName);
+
+        if(_tableList.size() > 1){
+            I_Table lastTable = _tableList.get(_tableList.size() - 2);
+            table.connectWithOtherTable(_tableList.get(0));
+            lastTable.connectWithOtherTable(table);
+         }
+
+
         return true;
     }
 

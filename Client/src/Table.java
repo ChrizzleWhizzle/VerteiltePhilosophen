@@ -61,7 +61,7 @@ public class Table extends UnicastRemoteObject
         // |O|O|O|O (last right fork will be taken from first seat
         //  0 1 2 3
         Seat lastSeat = null;
-        Fork lastRightFork = null;
+        I_Fork lastRightFork = null;
         // first check if there already exists some seats, take the last seat and the right fork from the seat
         if (!_seats.isEmpty()) {
             lastSeat = _seats.get(_seatSize - 1);
@@ -91,17 +91,7 @@ public class Table extends UnicastRemoteObject
             // we need to rebind the right fork of the last existing seat to our newly created first fork
             lastSeat.rebindRightFork(lastRightFork);
         } else {
-            // first we need to ensure that the seat will not be taken by a new philosopher
-            lastSeat.freeForSeatChoice = false;
 
-            // wait if some philosophers are waiting to eat on that seat
-            while (lastSeat.lock.getQueueLength() > 0 || lastSeat.lock.isLocked()) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    // nothing happens in here
-                }
-            }
             lastSeat.rebindRightFork(forkList.get(0));
 
             // we need to set the right fork of our last created seat to the previous right fork of the already existing last seat
@@ -117,6 +107,10 @@ public class Table extends UnicastRemoteObject
 
     public void connectWithOtherTable(I_Table otherTable)  throws RemoteException{
         I_Fork fstForkOtherTable = otherTable.getFirstFork();
+        Seat lastSeat = _seats.get(_seats.size()-1);
+
+        lastSeat.rebindRightFork(fstForkOtherTable);
+
     }
 
     /**
@@ -125,7 +119,7 @@ public class Table extends UnicastRemoteObject
      *
      * @return returns the first fork of the Table
      */
-    public Fork getFirstFork()  throws RemoteException{
+    public I_Fork getFirstFork()  throws RemoteException{
         return _forks.get(0);
     }
 
@@ -144,7 +138,7 @@ public class Table extends UnicastRemoteObject
         // we have to delete the seats from end to front of the list as we need to keep the most left fork
 
         // first get the last fork
-        Fork mostRightFork = _seats.get(_seatSize - 1).getRightFork();
+        I_Fork mostRightFork = _seats.get(_seatSize - 1).getRightFork();
 
         // ensure that at least min seats will be kept
         int maxSeatsToDelete = Math.min(_seatSize - MIN_SEATS, nSeatCount);

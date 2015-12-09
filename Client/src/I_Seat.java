@@ -16,9 +16,9 @@ public interface I_Seat extends Remote {
 
     void dropLeft() throws RemoteException;
 
-    Fork getRightFork() throws RemoteException;
+    I_Fork getRightFork() throws RemoteException;
 
-    void rebindRightFork(Fork f) throws RemoteException;
+    void rebindRightFork(I_Fork f) throws RemoteException;
 
 
     void standUp() throws RemoteException;

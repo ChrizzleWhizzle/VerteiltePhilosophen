@@ -23,7 +23,7 @@ public class Philosopher extends Thread {
     private int mealsEaten;
     public int totalMealsEaten;
     private boolean hasBothForks = false;
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     public Philosopher(int id, Table table, PhilosopherState state, int mealsEatenOffset) {
         this.id = id;

@@ -1,9 +1,6 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
-/**
- * Created by Chris on 02.12.2015.
- */
 public interface I_Table extends Remote {
 
     boolean isAllowedToEat(Philosopher p) throws RemoteException;
@@ -11,7 +8,7 @@ public interface I_Table extends Remote {
     void addSeats(int nSeatCount) throws RemoteException;
 
 
-    Fork getFirstFork() throws RemoteException;
+    I_Fork getFirstFork() throws RemoteException;
 
     int getQueueLength() throws RemoteException;
 
@@ -23,4 +20,6 @@ public interface I_Table extends Remote {
     String getName() throws RemoteException;
 
     int getMaxMealsEaten()throws RemoteException;
+
+    void connectWithOtherTable(I_Table otherTable)  throws RemoteException;
 }

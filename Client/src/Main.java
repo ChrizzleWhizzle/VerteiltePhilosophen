@@ -19,7 +19,7 @@ public class Main {
         table = new Table("Tafelrunde", nSeatCount);
 
         _master = new Master(table, 10);
-        _master.connectToServermasterAndAddOwnTable("10.28.4.14");
+        _master.connectToServermasterAndAddOwnTable("localhost");
         _master.addPhilosophers(nPhilosophers, nHungryPhils);
 
 
@@ -28,7 +28,7 @@ public class Main {
         table2 = new Table("Das letzte Abendmahl", nSeatCount);
 
         Master m2 = new Master(table2, 10);
-        m2.connectToServermasterAndAddOwnTable("10.28.4.14");
+        m2.connectToServermasterAndAddOwnTable("localhost");
         m2.addPhilosophers(nPhilosophers, nHungryPhils);
 
         //master.start();
@@ -65,7 +65,7 @@ public class Main {
         _master.removeSeats(Integer.MAX_VALUE);
 
         try {
-            Thread.sleep(54000);
+            Thread.sleep(5400);
         } catch (InterruptedException e) {
         }
 
