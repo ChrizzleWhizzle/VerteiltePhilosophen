@@ -115,8 +115,8 @@ public class Table extends UnicastRemoteObject
         postMsg(String.format("#Seats added: %d | #Total seats: %d", nSeatCount, _seatSize));
     }
 
-    public void connectWithOtherTable(Table t)  throws RemoteException{
-
+    public void connectWithOtherTable(I_Table otherTable)  throws RemoteException{
+        I_Fork fstForkOtherTable = otherTable.getFirstFork();
     }
 
     /**
