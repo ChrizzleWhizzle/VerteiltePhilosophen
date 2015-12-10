@@ -1,6 +1,7 @@
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Seat extends UnicastRemoteObject implements I_Seat {
@@ -9,11 +10,17 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
     private I_Fork rightFork;
     final int id;
 
+    private final ReentrantLock lock = new ReentrantLock();
+    boolean freeForSeatChoice = true;
+
     private final int maxTriesForRightFork = 10;
 
-    @Override
-    public ReentrantLock getLock() throws RemoteException {
-        return lock;
+
+
+    public Seat(int id, Fork leftFork, Fork rightFork) throws RemoteException {
+        this.leftFork = leftFork;
+        this.rightFork = rightFork;
+        this.id = id;
     }
 
     @Override
@@ -21,13 +28,9 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
         return id;
     }
 
-    private final ReentrantLock lock = new ReentrantLock();
-    boolean freeForSeatChoice = true;
-
-    public Seat(int id, Fork leftFork, Fork rightFork) throws RemoteException {
-        this.leftFork = leftFork;
-        this.rightFork = rightFork;
-        this.id = id;
+    @Override
+    public ReentrantLock getLock() throws RemoteException {
+        return lock;
     }
 
     @Override
@@ -45,22 +48,27 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
         return false;
     }
 
+    @Override
     public boolean takeLeftFork() throws InterruptedException, RemoteException {
         return leftFork.take();
     }
 
+    @Override
     public void dropRight() throws RemoteException {
         rightFork.drop();
     }
 
+    @Override
     public void dropLeft() throws RemoteException {
         leftFork.drop();
     }
 
+    @Override
     public I_Fork getRightFork() throws RemoteException {
         return rightFork;
     }
 
+    @Override
     public void rebindRightFork(I_Fork f) throws RemoteException {
         // first we need to ensure that the seat will not be taken by a new philosopher
         freeForSeatChoice = false;
@@ -79,12 +87,17 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
         freeForSeatChoice = true;
     }
 
+    @Override
+    public synchronized boolean sitDown() throws InterruptedException, RemoteException {
+        return lock.tryLock(100, TimeUnit.MILLISECONDS);
+    }
 
     @Override
     public String toString() {
         return "Seat#" + id + " ".concat(leftFork.toString().concat(rightFork.toString()));
     }
 
+    @Override
     public void standUp() throws RemoteException {
         try {
             lock.unlock();

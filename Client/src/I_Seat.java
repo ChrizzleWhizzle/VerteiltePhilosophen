@@ -22,6 +22,7 @@ public interface I_Seat extends Remote {
 
     void rebindRightFork(I_Fork f) throws RemoteException;
 
+    boolean sitDown() throws InterruptedException, RemoteException;
 
     void standUp() throws RemoteException;
 

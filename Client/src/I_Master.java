@@ -22,7 +22,7 @@ public interface I_Master extends Remote {
 
     void stopTheFeeding() throws RemoteException;
 
-    Seat takeSeat(Seat compareToThisSeat) throws InterruptedException, RemoteException;
+    I_Seat takeSeat(I_Seat compareToThisSeat) throws InterruptedException, RemoteException;
 
     List<Philosopher> getPhilosophers() throws RemoteException;
 }

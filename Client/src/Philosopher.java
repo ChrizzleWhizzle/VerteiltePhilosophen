@@ -105,7 +105,9 @@ public class Philosopher extends Thread {
 
     private void takeSeat() throws InterruptedException, RemoteException {
         seat = table.takeSeat(false);
-        seat.getLock().lockInterruptibly();
+        while (true ) {
+            if (seat.sitDown()) return;
+        }
     }
 
     private void sleepBan() throws InterruptedException {

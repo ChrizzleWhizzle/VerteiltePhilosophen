@@ -12,10 +12,12 @@ public class Fork extends UnicastRemoteObject
             throws RemoteException {
     }
 
-    public boolean take() throws InterruptedException, RemoteException {
+    @Override
+    public synchronized boolean take() throws InterruptedException, RemoteException {
         return lock.tryLock(1, TimeUnit.MILLISECONDS);
     }
 
+    @Override
     public void drop() throws RemoteException {
         try {
             lock.unlock();

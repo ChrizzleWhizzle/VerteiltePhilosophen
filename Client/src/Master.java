@@ -64,7 +64,7 @@ public class Master extends UnicastRemoteObject
             if (_feeding) p.start();
         }
 
-        postMsg(String.format("Table: %s | #Philosophers added: %d", _table.getName(), totalPhils));
+        postMsg(String.format("#Philosophers added: %d", totalPhils));
 
     }
 
@@ -103,7 +103,7 @@ public class Master extends UnicastRemoteObject
 
     @Override
     public void startTheFeeding() throws RemoteException {
-        System.out.println("Start the feeding");
+        postMsg("Start the feeding");
         if (_feeding) return;
         _feeding = true;
         _phils.forEach(p -> p.start()); //Thread::start);
@@ -111,7 +111,7 @@ public class Master extends UnicastRemoteObject
 
     @Override
     public void stopTheFeeding() throws RemoteException{
-        System.out.println("Stop the Feeding");
+        postMsg("Stop the Feeding");
         _feeding = false;
         _phils.forEach(p -> p.interrupt());
     }
@@ -123,15 +123,15 @@ public class Master extends UnicastRemoteObject
     @Override
     public I_Seat takeSeat(I_Seat compareToThisSeat) throws InterruptedException, RemoteException {
         // Let the servermaster compare local best Seat with other tables best seats
-        I_Seat seat = _sm.takeSeat((I_Table)_table,compareToThisSeat);
+        I_Seat seat = _sm.takeSeat(_table,compareToThisSeat);
 
         return seat;
 
     }
 
-    private void postMsg(String str) {
-        System.out.printf("Time: %d Event: %d Tablemaster %s \n",
-                System.currentTimeMillis(), ++event, str);
+    private void postMsg(String str) throws RemoteException{
+        System.out.printf("Time: %d Event: %d Tablemaster of Table: %s | Message: %s \n",
+                System.currentTimeMillis(), ++event, _table.getName(), str);
     }
 
     @Override
