@@ -3,12 +3,9 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static Scanner _scanner = new Scanner(System.in);
     private static Master _master;
 
     public static void main(String[] args) throws RemoteException {
-
-        //printMenu();
 
         int nSeatCount = 2;
         int nPhilosophers = 2;
@@ -31,7 +28,6 @@ public class Main {
         m2.connectToServermasterAndAddOwnTable("localhost");
         m2.addPhilosophers(nPhilosophers, nHungryPhils);
 
-        //master.start();
         System.out.println("Building some tension");
 
         try {
@@ -66,7 +62,7 @@ public class Main {
         _master.removeSeats(Integer.MAX_VALUE);
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(20000);
         } catch (InterruptedException e) {
         }
 
@@ -104,65 +100,5 @@ public class Main {
 
         System.out.println("Total Meals eaten: " + sumMealsEaten + " max: " + maxEaten + " min: " + minEaten);
         System.exit(0);
-    }
-
-    private static void printMenu() {
-
-        System.out.println("-- Menu --");
-        System.out.println("1. Init Table. ");
-        //if (_table != null) {
-
-        System.out.println("2. Add Seats to Table. ");
-        System.out.println("3. Exit the program. ");
-
-        //}
-
-        System.out.println("Please select one of the above options:");
-
-        String input = _scanner.nextLine();
-        switch (input.toLowerCase()) //This way it doesn't matter if they typed an uppercase letter
-        {
-            case "1":
-                System.out.println("You have selected option X");
-                break;
-            case "2":
-                System.out.println("You have selected option Y");
-                break;
-            case "3":
-                System.out.println("You have selected option Z");
-                break;
-            default:
-                System.out.println("You entered an invalid option");
-                break;
-        }
-    }
-
-    private static void m_InitTable() {
-        System.out.println("-- Init Table --");
-        System.out.println("Please enter a name for the Table");
-
-        String input = _scanner.nextLine();
-        switch (input.toLowerCase()) //This way it doesn't matter if they typed an uppercase letter
-        {
-            case "":
-                System.out.println("Sorry you entered no name");
-                m_InitTable();
-            default:
-                break;
-        }
-
-        int numberOfSeats = _scanner.nextInt();
-        switch (numberOfSeats) //This way it doesn't matter if they typed an uppercase letter
-        {
-            case 0:
-                System.out.println("Sorry you entered no name");
-                m_InitTable();
-            default:
-                break;
-        }
-    }
-
-    private void m_AddSeats() {
-
     }
 }
