@@ -10,13 +10,14 @@ public class Main {
         int nSeatCount = 2;
         int nPhilosophers = 2;
         int nHungryPhils = 1;
+        String serverIP = "10.28.12.19";
 
         //Create table
         Table table;
         table = new Table("Tafelrunde", nSeatCount);
 
         _master = new Master(table, 10);
-        _master.connectToServermasterAndAddOwnTable("localhost");
+        _master.connectToServermasterAndAddOwnTable(serverIP);
         _master.addPhilosophers(nPhilosophers, nHungryPhils);
 
 
@@ -25,7 +26,7 @@ public class Main {
         table2 = new Table("Das letzte Abendmahl", nSeatCount);
 
         Master m2 = new Master(table2, 10);
-        m2.connectToServermasterAndAddOwnTable("localhost");
+        m2.connectToServermasterAndAddOwnTable(serverIP);
         m2.addPhilosophers(nPhilosophers, nHungryPhils);
 
         System.out.println("Building some tension");

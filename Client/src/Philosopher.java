@@ -22,7 +22,7 @@ public class Philosopher extends Thread {
     private int mealsEaten;
     public int totalMealsEaten;
     private boolean hasBothForks = false;
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     public Philosopher(int id, Table table, PhilosopherState state, int mealsEatenOffset) {
         this.id = id;
@@ -51,7 +51,8 @@ public class Philosopher extends Thread {
                     }
                     // if philosopher couldn't get both forks after several tries, start from the beginning and get a new seat assigned.
                     if (!hasBothForks) {
-                        postMsg("Could not take forks");
+                        System.out.println("Could not take forks");
+                        //postMsg("Could not take forks");
                         seat.standUp();
                         continue;
                     }

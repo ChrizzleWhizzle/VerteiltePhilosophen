@@ -83,8 +83,11 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
             }
             try {
                 tmp = t.takeSeat(true);
+                postMsg("tmp seat: " + tmp);
+
                 if (tmp.getLock().getQueueLength() < seatOfOtherTable.getLock().getQueueLength()) {
                     // set compareseat to get minimum queue length
+                    postMsg("tmp seat is better than current held seat");
                     seatOfOtherTable = tmp;
                 }
             }
@@ -92,8 +95,8 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
                 postMsg("Can't reach table " + t.getName());
             }
         }
-        if(!compareToThisSeat.equals(seatOfOtherTable)){
-            System.out.println("Using seat from different table.");
+        if (!compareToThisSeat.equals(seatOfOtherTable)){
+            postMsg("Using seat from different table.");
         }
         return seatOfOtherTable;
     }
