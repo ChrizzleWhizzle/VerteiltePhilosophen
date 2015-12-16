@@ -50,13 +50,13 @@ public class Main {
 
 
         try {
-            //_master.addSeats(10);
+            _master.addSeats(3);
             m2.addSeats(10);
             Thread.sleep(5000);
         } catch (InterruptedException e) {
         }
 
-        _master.addPhilosophers(100, 10);
+        _master.addPhilosophers(100, 10000);
         m2.addPhilosophers(10, 10);
 
         // try to remove more seats than possible

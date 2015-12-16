@@ -1,4 +1,3 @@
-import java.io.Serializable;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -10,8 +9,6 @@ public class Master extends UnicastRemoteObject
 
     private static int event = 0;
     private Table _table;
-    //int minEaten = Integer.MAX_VALUE;
-    //int maxEaten;
     int _difference;
     private List<Philosopher> _phils;
     private boolean _feeding = false;
@@ -123,6 +120,7 @@ public class Master extends UnicastRemoteObject
     @Override
     public I_Seat takeSeat(I_Seat compareToThisSeat) throws InterruptedException, RemoteException {
         // Let the servermaster compare local best Seat with other tables best seats
+        postMsg("Take seat has been called to check seats on other tables");
         I_Seat seat = _sm.takeSeat(_table,compareToThisSeat);
 
         return seat;

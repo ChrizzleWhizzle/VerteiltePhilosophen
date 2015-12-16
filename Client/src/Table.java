@@ -1,10 +1,10 @@
-import java.io.Serializable;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Condition;
 
 
 public class Table extends UnicastRemoteObject
@@ -17,7 +17,7 @@ public class Table extends UnicastRemoteObject
     private static final int MIN_SEATS = 2;
     private final String _name;
     private static int event = 0;
-    private static final int checkOtherTablesIfQueuelengthIsBiggerThan = 2;
+    private static final int checkOtherTablesIfQueuelengthIsBiggerThan = 1;
     private int maxMealsEaten = 0;
 
 
@@ -189,7 +189,7 @@ public class Table extends UnicastRemoteObject
 
 
     public I_Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException, RemoteException  {
-        I_Seat freeSeat = _seats.get(0);
+        I_Seat freeSeat = _seats.get(new Random().nextInt(_seatSize));
         boolean freeSeatHasPhilsWaiting = false;
         //try {
         for (int i = 0; i < _seats.size(); i++) { //todo reihenfolge zufällig modulo
@@ -206,11 +206,13 @@ public class Table extends UnicastRemoteObject
                 }
                 if (freeSeat.getLock().getQueueLength() > currentSeat.getLock().getQueueLength()) {
                     freeSeat = currentSeat;
-                    if (freeSeat.getLock().getQueueLength() > checkOtherTablesIfQueuelengthIsBiggerThan) {
-                        freeSeatHasPhilsWaiting = true;
-                    }
+
                 }
             }
+        }
+        //postMsg(freeSeat+ " | " +freeSeat.getLock().getQueueLength());
+        if (freeSeat.getLock().getQueueLength() > checkOtherTablesIfQueuelengthIsBiggerThan) {
+            freeSeatHasPhilsWaiting = true;
         }
 
         // check other tables for a seat to sit directly, skip if tablemaster called this method to prevent recursive stack overflow
@@ -218,8 +220,6 @@ public class Table extends UnicastRemoteObject
             freeSeat = master.takeSeat(freeSeat);
         }
         // try to lock the seat in the philosopher thread
-        //freeSeat.lock.lockInterruptibly();
-        //} finally { }
 
         return freeSeat;
     }

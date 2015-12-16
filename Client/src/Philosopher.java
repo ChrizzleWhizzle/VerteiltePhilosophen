@@ -75,6 +75,8 @@ public class Philosopher extends Thread {
                 seat.dropLeft();
                 seat.dropRight();
                 seat.standUp();
+            }catch (NullPointerException e) {
+
             } catch (RemoteException e) {
 
             }

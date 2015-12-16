@@ -9,18 +9,14 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
 
     private static int event = 0;
     private List<I_Table> _tableList;
-    //int minEaten = Integer.MAX_VALUE;
-    //int maxEaten;
-    int _difference;
 
-    public ServerMaster(int difference) throws RemoteException {
+    public ServerMaster() throws RemoteException {
         _tableList = new CopyOnWriteArrayList<>();
-        _difference = difference;
         try {
             LocateRegistry.createRegistry(2020);
             Naming.bind("//localhost:2020/ServerMaster",
                     this);
-            System.out.println("ServerMaster: finished rmi binding");
+            postMsg("ServerMaster: finished rmi binding");
         } catch (Exception e) {
             // Registrieren des Remote-Objects fehlgeschlagen
             e.printStackTrace();
@@ -28,7 +24,7 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
     }
 
     public static void main(String... args) throws RemoteException {
-        ServerMaster sm = new ServerMaster(10);
+        ServerMaster sm = new ServerMaster();
     }
 
     /**
@@ -100,46 +96,6 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
         }
         return seatOfOtherTable;
     }
-
-    public List getTables() throws RemoteException {
-        return _tableList;
-    }
-
-    public boolean isAllowedToEat(Philosopher phil) throws RemoteException {
-        int minEaten = Integer.MAX_VALUE;
-        int maxEaten = 0;
-
-        boolean allowedToEat = true;
-        /*for(Philosopher p: philList){
-            if (p == phil) continue;
-            minEaten = Math.min(minEaten,p.totalMealsEaten);
-            if(phil.totalMealsEaten > (minEaten + difference)){
-                allowedToEat = false;
-                break;
-            }
-            //maxEaten = Math.max(maxEaten, p.totalMealsEaten);
-        }*/
-        //minEaten = maxEaten;
-
-        return allowedToEat;
-    }
-
-    int minEaten = Integer.MAX_VALUE;
-    int maxEaten = 0;
-
-    public void startTheFeeding() {
-        System.out.println("Start the feeding");
-        //_tableList.values().forEach(Table::startTheFeeding);
-        //for (Table t : _tableList.values()) {
-        //    t.startTheFeeding();
-        //}
-    }
-
-    public void stopTheFeeding() {
-        System.out.println("Stop the Feeding");
-        //_tableList.values().forEach(Table::stopTheFeeding);
-    }
-
 
     private void postMsg(String str) {
         System.out.printf("Time: %d Event: %d ServerMaster %s \n",
