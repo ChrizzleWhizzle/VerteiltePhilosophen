@@ -4,7 +4,7 @@ public class Philosopher extends Thread {
     // Process:
     // start with meditate
     // if hungry go to dining room
-    // take a free seat
+    // take a free seat or a seat with a small waiting queue
     // take right fork (only one Philosopher can take the fork at time)
     // take left fork (only one Philosopher can take the fork at time)
     // eat
@@ -12,7 +12,6 @@ public class Philosopher extends Thread {
     // after 3 meals go to sleep
     // (rave)
     // repeat
-    // horst
 
     public PhilosopherState state;
     private static int event = 0;
@@ -23,7 +22,7 @@ public class Philosopher extends Thread {
     private int mealsEaten;
     public int totalMealsEaten;
     private boolean hasBothForks = false;
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     public Philosopher(int id, Table table, PhilosopherState state, int mealsEatenOffset) {
         this.id = id;
@@ -35,6 +34,7 @@ public class Philosopher extends Thread {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
+                // ask table if allowed to eat
                 if (table.isAllowedToEat(this)) {
                     takeSeat();
                     // take forks
@@ -49,19 +49,21 @@ public class Philosopher extends Thread {
                             break;
                         }
                     }
+                    // if philosopher couldn't get both forks after several tries, start from the beginning and get a new seat assigned.
                     if (!hasBothForks) {
-                        System.out.println("Could not take forks");
+                        postMsg("Could not take forks");
                         seat.standUp();
                         continue;
                     }
-                    ; //boolean hasbothforks
                     eat();
                     table.setMaxEatenIfMore(totalMealsEaten);
                     seat.dropLeft();
                     seat.dropRight();
                     seat.standUp();
                     meditate();
-                    if (mealsEaten == state.getMaxMealsEaten()) goToSleep();
+                    if (mealsEaten == state.getMaxMealsEaten()) {
+                        goToSleep();
+                    }
                 } else {
                     sleepBan();
                 }

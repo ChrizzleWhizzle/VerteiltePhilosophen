@@ -34,16 +34,16 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
     }
 
     @Override
+    //try to take right fork for maxTriesForRightFork times
     public boolean takeRightFork() throws InterruptedException, RemoteException {
         int tmpTries = 0;
         while (tmpTries < maxTriesForRightFork) {
-            if (rightFork.take()) return true;
-//            try {
+            if (rightFork.take()){
+                return true;
+            }
             Thread.sleep(new Random().nextInt(5));
             tmpTries++;
-//            } catch (InterruptedException e) {
-//                return;
-//            }
+
         }
         return false;
     }
