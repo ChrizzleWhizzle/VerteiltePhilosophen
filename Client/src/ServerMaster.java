@@ -34,7 +34,7 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
     @Override
     public boolean addTable(I_Table table) throws RemoteException {
         String tableName = table.getName();
-        postMsg("Trying to add table." + tableName);
+        postMsg("Trying to add table '" + tableName + "'");
 
         for (I_Table t : _tableList) {
             try {
@@ -44,22 +44,23 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
             } catch (Exception e) {
                 _tableList.remove(t);
                 _tableList.add(table);
-                postMsg("Table replaced." + tableName);
+                postMsg("Table '" + tableName + "' replaced.");
                 return true;
             }
         }
         _tableList.add(table);
-        postMsg("Table added." + tableName);
+        postMsg("Table '" + tableName + "' added.");
 
-        if(_tableList.size() > 1){
+        if (_tableList.size() > 1) {
             I_Table lastTable = _tableList.get(_tableList.size() - 2);
             table.connectWithOtherTable(_tableList.get(0));
             lastTable.connectWithOtherTable(table);
-         }
+        }
 
 
         return true;
     }
+
     @Override
     public int getAllMinEaten(int m) throws RemoteException {
         int result = m;
@@ -73,25 +74,23 @@ public class ServerMaster extends UnicastRemoteObject implements I_ServerMaster 
     public I_Seat takeSeat(I_Table table, I_Seat compareToThisSeat) throws RemoteException {
         I_Seat seatOfOtherTable = compareToThisSeat;
         I_Seat tmp;
-        for(I_Table t: _tableList){
-            if(t.equals(table)){
+        for (I_Table t : _tableList) {
+            if (t.equals(table)) {
                 continue;
             }
             try {
                 tmp = t.takeSeat(true);
-                postMsg("tmp seat: " + tmp);
 
                 if (tmp.getLock().getQueueLength() < seatOfOtherTable.getLock().getQueueLength()) {
                     // set compareseat to get minimum queue length
                     postMsg("tmp seat is better than current held seat");
                     seatOfOtherTable = tmp;
                 }
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 postMsg("Can't reach table " + t.getName());
             }
         }
-        if (!compareToThisSeat.equals(seatOfOtherTable)){
+        if (!compareToThisSeat.equals(seatOfOtherTable)) {
             postMsg("Using seat from different table.");
         }
         return seatOfOtherTable;

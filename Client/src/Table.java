@@ -17,7 +17,7 @@ public class Table extends UnicastRemoteObject
     private static final int MIN_SEATS = 2;
     private final String _name;
     private static int event = 0;
-    private static final int checkOtherTablesIfQueuelengthIsBiggerThan = 1;
+    private static final int checkOtherTablesIfQueuelengthIsBiggerThan = 5;
     private int maxMealsEaten = 0;
 
 
@@ -81,11 +81,10 @@ public class Table extends UnicastRemoteObject
 
         // first add one seat and take right fork from the last seat of the existing seats as left fork
         for (int i = 0; i < nSeats; i++) {
-            // TODO: Handle Exception correctly
             try {
                 seatList.add(new Seat(seatID++, forkList.get(i), forkList.get(i + 1)));
             } catch (RemoteException e) {
-                e.printStackTrace();
+
             }
         }
 
@@ -138,12 +137,10 @@ public class Table extends UnicastRemoteObject
         return queue;
     }
 
+    @Override
     public void removeSeats(int nSeatCount)  throws RemoteException{
 
         // we have to delete the seats from end to front of the list as we need to keep the most left fork
-
-        // first get the last fork
-        I_Fork mostRightFork = _seats.get(_seatSize - 1).getRightFork();
 
         // ensure that at least min seats will be kept
         int maxSeatsToDelete = Math.min(_seatSize - MIN_SEATS, nSeatCount);
@@ -155,14 +152,14 @@ public class Table extends UnicastRemoteObject
             Seat secondLastSeat = _seats.get(_seatSize - 2);
 
             // disable seats to be selected on 'takeSeat' alogrithm
-            lastSeat.freeForSeatChoice = false;
-            secondLastSeat.freeForSeatChoice = false;
+            lastSeat.setFreeForSeatChoice(false);
+            secondLastSeat.setFreeForSeatChoice(false);
 
             // wait till every waiting/eating Philosopher leaves the seat
             while (lastSeat.getLock().getQueueLength() > 0 || secondLastSeat.getLock().getQueueLength() > 0 ||
                     lastSeat.getLock().isLocked() || secondLastSeat.getLock().isLocked()) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(1);
                 } catch (InterruptedException e) {
                     // nothing happens in here
                 }
@@ -173,7 +170,7 @@ public class Table extends UnicastRemoteObject
 
             // if seat will be deleted next iteration we don't need to set him free again for seat scheduling
             if (i + 1 == maxSeatsToDelete) {
-                secondLastSeat.freeForSeatChoice = true;
+                secondLastSeat.setFreeForSeatChoice(true);
             }
             // remove the last seat
             _seats.remove(lastSeat);
@@ -189,14 +186,14 @@ public class Table extends UnicastRemoteObject
 
 
     public I_Seat takeSeat(boolean tableMasterIsAsking) throws InterruptedException, RemoteException  {
-        I_Seat freeSeat = _seats.get(new Random().nextInt(_seatSize));
+        I_Seat freeSeat = _seats.get(0);
         boolean freeSeatHasPhilsWaiting = false;
         //try {
-        for (int i = 0; i < _seats.size(); i++) { //todo reihenfolge zufällig modulo
+        for (int i = new Random().nextInt(_seatSize); i < _seats.size(); i++) {
             Seat currentSeat = _seats.get(i);
 
             // check if seat is still available for selection, may be not if seat or right neighbor will be deleted
-            if (currentSeat.freeForSeatChoice) {
+            if (currentSeat.isFreeForSeatChoice()) {
                 // If current seat is free, check left seat then right seat(add seatsize to avoid -1 return.
                 if (!currentSeat.getLock().isLocked()
                         && !_seats.get((i + 1) % _seatSize).getLock().isLocked()
@@ -206,11 +203,9 @@ public class Table extends UnicastRemoteObject
                 }
                 if (freeSeat.getLock().getQueueLength() > currentSeat.getLock().getQueueLength()) {
                     freeSeat = currentSeat;
-
                 }
             }
         }
-        //postMsg(freeSeat+ " | " +freeSeat.getLock().getQueueLength());
         if (freeSeat.getLock().getQueueLength() > checkOtherTablesIfQueuelengthIsBiggerThan) {
             freeSeatHasPhilsWaiting = true;
         }

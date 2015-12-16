@@ -10,6 +10,10 @@ public interface I_Seat extends Remote {
 
     int getId() throws RemoteException;
 
+    boolean isFreeForSeatChoice() throws RemoteException ;
+
+    void setFreeForSeatChoice(boolean freeForSeatChoice) throws RemoteException ;
+
     boolean takeRightFork() throws InterruptedException, RemoteException;
 
     boolean takeLeftFork() throws InterruptedException, RemoteException;

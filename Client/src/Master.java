@@ -120,7 +120,7 @@ public class Master extends UnicastRemoteObject
     @Override
     public I_Seat takeSeat(I_Seat compareToThisSeat) throws InterruptedException, RemoteException {
         // Let the servermaster compare local best Seat with other tables best seats
-        postMsg("Take seat has been called to check seats on other tables");
+        //postMsg("Take seat has been called to check seats on other tables");
         I_Seat seat = _sm.takeSeat(_table,compareToThisSeat);
 
         return seat;

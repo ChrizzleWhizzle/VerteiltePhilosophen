@@ -11,9 +11,9 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
     final int id;
 
     private final ReentrantLock lock = new ReentrantLock();
-    boolean freeForSeatChoice = true;
+    private boolean freeForSeatChoice = true;
 
-    private final int maxTriesForRightFork = 10;
+    private final int maxTries = 10;
 
 
 
@@ -34,10 +34,20 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
     }
 
     @Override
-    //try to take right fork for maxTriesForRightFork times
+    public boolean isFreeForSeatChoice() throws RemoteException  {
+        return freeForSeatChoice;
+    }
+
+    @Override
+    public synchronized void setFreeForSeatChoice(boolean freeForSeatChoice) throws RemoteException {
+        this.freeForSeatChoice = freeForSeatChoice;
+    }
+
+    @Override
+    //try to take right fork for maxTries times
     public boolean takeRightFork() throws InterruptedException, RemoteException {
         int tmpTries = 0;
-        while (tmpTries < maxTriesForRightFork) {
+        while (tmpTries < maxTries) {
             if (rightFork.take()){
                 return true;
             }
@@ -64,19 +74,19 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
     }
 
     @Override
-    public I_Fork getRightFork() throws RemoteException {
+    public synchronized I_Fork getRightFork() throws RemoteException {
         return rightFork;
     }
 
     @Override
-    public void rebindRightFork(I_Fork f) throws RemoteException {
+    public synchronized void rebindRightFork(I_Fork f) throws RemoteException {
         // first we need to ensure that the seat will not be taken by a new philosopher
         freeForSeatChoice = false;
 
         // wait if some philosophers are waiting to eat on that seat
         while (lock.getQueueLength() > 0 || lock.isLocked()) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(new Random().nextInt(10));
             } catch (InterruptedException e) {
                 // nothing happens in here
             }
@@ -89,7 +99,15 @@ public class Seat extends UnicastRemoteObject implements I_Seat {
 
     @Override
     public synchronized boolean sitDown() throws InterruptedException, RemoteException {
-        return lock.tryLock(100, TimeUnit.MILLISECONDS);
+        int tmpTries = 0;
+        while (tmpTries < maxTries) {
+            if (lock.tryLock(new Random().nextInt(5), TimeUnit.MILLISECONDS)){
+                return true;
+            }
+            tmpTries++;
+
+        }
+        return false;
     }
 
     @Override

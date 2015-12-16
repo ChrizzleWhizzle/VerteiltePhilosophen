@@ -51,8 +51,7 @@ public class Philosopher extends Thread {
                     }
                     // if philosopher couldn't get both forks after several tries, start from the beginning and get a new seat assigned.
                     if (!hasBothForks) {
-                        System.out.println("Could not take forks");
-                        //postMsg("Could not take forks");
+                        postMsg("Could not take forks");
                         seat.standUp();
                         continue;
                     }
@@ -75,7 +74,7 @@ public class Philosopher extends Thread {
                 seat.dropLeft();
                 seat.dropRight();
                 seat.standUp();
-            }catch (NullPointerException e) {
+            } catch (NullPointerException e) {
 
             } catch (RemoteException e) {
 
@@ -110,8 +109,10 @@ public class Philosopher extends Thread {
 
     private void takeSeat() throws InterruptedException, RemoteException {
         seat = table.takeSeat(false);
-        while (true ) {
+        while (true) {
             if (seat.sitDown()) return;
+            else sleep(5);
+
         }
     }
 

@@ -10,7 +10,7 @@ public class Main {
         int nSeatCount = 2;
         int nPhilosophers = 2;
         int nHungryPhils = 1;
-        String serverIP = "10.28.12.19";
+        String serverIP = "localhost";
 
         //Create table
         Table table;
@@ -56,7 +56,7 @@ public class Main {
         } catch (InterruptedException e) {
         }
 
-        _master.addPhilosophers(100, 10000);
+        _master.addPhilosophers(10, 10000);
         m2.addPhilosophers(10, 10);
 
         // try to remove more seats than possible

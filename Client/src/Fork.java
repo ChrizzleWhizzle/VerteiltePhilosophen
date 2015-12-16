@@ -18,7 +18,7 @@ public class Fork extends UnicastRemoteObject
     }
 
     @Override
-    public void drop() throws RemoteException {
+    public synchronized void drop() throws RemoteException {
         try {
             lock.unlock();
         } catch (Exception e) {
